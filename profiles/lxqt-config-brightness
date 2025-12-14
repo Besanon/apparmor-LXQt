@@ -1,0 +1,68 @@
+# apparmor.d - Full set of apparmor profiles
+# Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
+# Copyright (C) 2024 Besanon  <m231009ts@mailfence.com>
+# SPDX-License-Identifier: GPL-2.0-only
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+@{exec_path} = @{bin}/lxqt-config-brightness
+profile lxqt-config-brightness @{exec_path} flags=(complain) {
+  include <abstractions/base>
+  include <abstractions/lxqt>
+
+  signal (send)  set=term peer=lxqt-config-brightness//pkexec,
+
+  @{exec_path} mr,
+
+  @{bin}/pkexec Cx -> pkexec,
+
+  @{sh_path} rix,
+
+  owner @{HOME}/ r,
+
+  owner /tmp/@{int} r,
+
+  @{sys}/class/backlight/ r,
+  @{sys}/devices/@{pci}/*_backlight/{,max_,actual_}brightness rw,
+  @{sys}/devices/@{pci}/*_backlight/{uevent,type,enabled} r,
+  @{sys}/devices/@{pci}/backlight/**/{,max_,actual_}brightness rw,
+  @{sys}/devices/@{pci}/backlight/**/{uevent,type,enabled} r,
+  @{sys}/devices/@{pci}/backlight/**/brightness rw,
+  @{sys}/devices/@{pci}/drm/card1/card1-eDP-1/intel_backlight/bl_power r,
+  @{sys}/devices/@{pci}/drm/card1/card1-LVDS-1/intel_backlight/bl_power r,
+
+  /dev/tty rw,
+
+  profile pkexec flags=(complain) {
+    include <abstractions/base>
+    include <abstractions/app/pkexec>
+
+    signal (receive)  set=term peer=lxqt-config-brightness,
+
+    ptrace (read) peer=lxqt-config-brightness,
+
+    @{bin}/@{bin}/lxqt-config-brightness Px,
+    @{bin}/lxqt-backlight_backend Px,
+
+    @{etc_ro}/inputrc r,
+    @{etc_ro}/inputrc.keys r,
+
+    @{user_share_dirs}/sddm/wayland-session.log w,
+    @{user_share_dirs}/sddm/xorg-session.log w,
+
+    @{sys}/class/backlight/ r,
+    @{sys}/devices/@{pci}/*_backlight/{,max_,actual_}brightness rw,
+    @{sys}/devices/@{pci}/*_backlight/{uevent,type,enabled} r,
+    @{sys}/devices/@{pci}/backlight/**/{,max_,actual_}brightness rw,
+    @{sys}/devices/@{pci}/backlight/**/{uevent,type,enabled} r,
+    @{sys}/devices/@{pci}/backlight/**/brightness rw,
+
+    include if exists <local/lxqt-config-brightness_pkexec>
+  }
+
+  include if exists <local/lxqt-config-brightness>
+}
+
+# vim:syntax=apparmor
