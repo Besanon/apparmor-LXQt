@@ -1,0 +1,67 @@
+# apparmor.d - Full set of apparmor profiles
+# Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
+# Copyright (C) 2024 Besanon  <m231009ts@mailfence.com>
+# SPDX-License-Identifier: GPL-2.0-only
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+@{exec_path} = @{bin}/lxqt-powermanagement 
+profile lxqt-powermanagement @{exec_path} flags=(attach_disconnected, complain) {
+  include <abstractions/base>
+  include <abstractions/lxqt>
+  include <abstractions/nameservice-strict>
+
+  network netlink raw,
+
+  ptrace (read) peer=lxqt-panel,
+
+  #aa:dbus own bus=session name=org.lxqt.lxqt-powermanagement
+
+  @{exec_path}					mr,
+
+  @{lib}/qt6/plugins/platformthemes/*.so mr,
+
+  @{bin}/xset						rPx,
+  @{bin}/pkexec 					rPx,
+  @{bin}/{,ba,da}sh 					rix,
+  @{bin}/lxqt-leave 					rPx,
+  @{bin}/dbus-launch rPx,  
+  /etc/udev/udev.conf 					r,
+  /etc/fstab 						r,
+  /etc/xdg/lxqt/lxqt-powermanagement.conf  rw,
+
+  owner @{user_config_dirs}/lxqt/#@{int} rwk,
+  owner @{user_config_dirs}/lxqt/power.conf rw,
+  owner @{user_config_dirs}/lxqt/lxqt-powermanagement.conf rw,
+
+  @{run}/systemd/inhibit/* 				rw,
+
+  @{sys}/class/backlight/ 				r,
+  @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/type r,
+  @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/max_brightness r,
+  @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/bl_power r,
+  @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/actual_brightness r,
+  @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.4/usb@{int}/uevent r,
+  @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.4/usb@{int}/**/uevent r,
+
+  @{sys}/devices/@{pci}/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda@{int}/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/**/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/host@{int}/target@{int}:0:0/4:0:0:0/block/sdb/uevent r,
+
+  @{run}/mount/utab r,
+
+  owner @{PROC}/@{pid}/mounts                           r,
+  owner @{PROC}/@{pid}/mountinfo   r,
+
+  owner /tmp/@{u8}  					r,
+
+  /dev/tty						rw,  
+  owner /dev/tty@{u8}  rw,
+
+  include if exists <local/lxqt-powermanagement>
+}
+
+# vim:syntax=apparmor
