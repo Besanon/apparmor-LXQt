@@ -1,0 +1,58 @@
+# apparmor.d - Full set of apparmor profiles
+# Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
+# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# SPDX-License-Identifier: GPL-2.0-only
+
+  # Common abstractions for any desktop environment
+  include <abstractions/accessibility>
+  include <abstractions/app-indicator>
+  include <abstractions/bus-session>
+  include <abstractions/bus/session/org.freedesktop.Application>
+  include <abstractions/bus/session/org.freedesktop.portal.Settings>
+  include <abstractions/bus/session/org.freedesktop.portal.Desktop>
+  include <abstractions/desktop-files>
+  include <abstractions/fonts-strict>
+  include <abstractions/gschemas>
+  include <abstractions/gtk-strict>
+  include <abstractions/icons>
+  include <abstractions/mime>
+  include <abstractions/notifications>
+  include <abstractions/qt5>
+  include <abstractions/qt6>
+  include <abstractions/recently-used>
+  include <abstractions/themes>
+  include <abstractions/user-dirs>
+  include <abstractions/wayland>
+  include <abstractions/X-strict>
+  include <abstractions/xdg-desktop>
+
+  signal (receive) set=(kill, term) peer=lxqt-session,	
+
+  ptrace read peer=lxqt-session,
+
+  /usr/share/desktop-base/{,**} 			r,
+  /usr/share/hwdata/pnp.ids 				r,
+  /usr/share/icu/@{int}.@{int}/*.dat 			r,
+  /usr/share/lxqt/{,**}    				rw,
+  /usr/share/qt{5,6}/ 					r,
+  /usr/share/qt{5,6}/{,**} 				r,
+  /usr/share/hplip/data/images/128x128/*.png 		r,
+  /usr/share/lxqt/translations/lxqt-policykit-agent/lxqt-policykit-agent_de.qm r,
+
+  owner @{HOME}/.Xdefaults 				r,
+
+  owner @{user_cache_dirs}/fontconfig/* 		rw,
+  owner @{user_cache_dirs}/lxqt-notificationd/*  	r,
+
+  owner @{user_config_dirs}/lxqt/lxqt.conf		rw,
+  owner @{user_config_dirs}/lxqt/session.conf		rw,
+  owner @{user_config_dirs}/lxqt/wayland/*.conf		rw,
+  owner @{user_config_dirs}/kwinrc			rw,
+  @{user_share_dirs}/sddm/wayland-session.log 		rw,
+
+  owner @{user_share_dirs}/sddm/wayland-session.log 	w,
+  owner @{user_share_dirs}/sddm/xorg-session.log 	rw,
+
+  include if exists <abstractions/lxqt.d>
+
+# vim:syntax=apparmor
