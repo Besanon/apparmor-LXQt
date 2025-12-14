@@ -1,0 +1,43 @@
+# apparmor.d - Full set of apparmor profiles
+# Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
+# Copyright (C) 2024 Besanon  <m231009ts@mailfence.com>
+# SPDX-License-Identifier: GPL-2.0-only
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+@{exec_path} = @{bin}/lxqt-globalkeysd 
+profile lxqt-globalkeysd @{exec_path} flags=(complain) {
+  include <abstractions/base>
+  include <abstractions/bus-accessibility>
+  include <abstractions/lxqt>
+  include <abstractions/nameservice-strict>
+  include <abstractions/fontconfig-cache-read>
+  
+  #aa:dbus own bus=session name=org.lxqt.global_key_shortcuts
+
+  @{exec_path}				mr,
+
+  @{bin}/screengrab				rPx,
+  @{bin}/lxqt-config-brightness			rPx,
+
+  /usr/share/lxqt/globalkeyshortcuts.conf 	rw,
+
+  /var/lib/dbus/machine-id  			r,
+
+  owner @{user_config_dirs}/lxqt/               r,
+  owner @{user_config_dirs}/lxqt/#@{int}        wr,
+  owner @{user_config_dirs}/lxqt/globalkeyshortcuts.conf.lock wrk,
+  owner @{user_config_dirs}/lxqt/globalkeyshortcuts.conf rw,
+  owner @{user_config_dirs}/lxqt/globalkeyshortcuts.conf.@{rand6} rw,
+  owner @{user_config_dirs}/lxqt/globalkeyshortcuts.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
+
+  /dev/tty					rw,
+
+  owner /tmp/@{int}  		       		r,
+
+  include if exists <local/lxqt-globalkeysd>
+}
+
+# vim:syntax=apparmor
