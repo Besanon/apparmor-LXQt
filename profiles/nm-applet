@@ -1,0 +1,94 @@
+# apparmor.d - Full set of apparmor profiles
+# Copyright (C) 2023-2024 Alexandre Pujol <alexandre@pujol.io>
+# Copyright (C) 2024 Besanon  <m231009ts@mailfence.com>
+# SPDX-License-Identifier: GPL-2.0-only
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+@{exec_path} = @{bin}/nm-applet 
+profile nm-applet @{exec_path} flags=(attach_disconnected) {
+  include <abstractions/base>
+  include <abstractions/consoles>
+  include <abstractions/dconf>
+  include <abstractions/bus-system>
+  include <abstractions/app/bwrap-glycin>
+  include <abstractions/fonts>
+  include <abstractions/fontconfig-cache-read>
+  include <abstractions/graphics>
+  include <abstractions/gtk>
+  include <abstractions/nameservice-strict>
+  include <abstractions/network-manager-observe>
+  include <abstractions/X-strict>
+
+  signal (receive) peer=lxqt-session,
+  signal (send) peer=glycin//&glycin//loaders//&nm-applet,
+  signal (send receive) set=kill peer=glycin//&nm-applet,
+
+  dbus receive bus=system path=/org/freedesktop/NetworkManager/ActiveConnection/@{int}
+       interface=org.freedesktop.NetworkManager.Connection.Active
+       member=StateChanged
+       peer=(name=@{busname}, label=NetworkManager),
+
+  dbus send bus=system path=/org/freedesktop/NetworkManager/Settings/@{int}
+       interface=org.freedesktop.NetworkManager.Settings.Connection
+       member=GetSettings
+       peer=(name=@{busname}, label=NetworkManager),
+
+  @{exec_path} mr,
+
+  @{bin}/nm-connection-editor  rPx,
+
+  @{bin}/bwrap                          Px -> nm-applet//&glycin,
+  @{lib}/glycin-loaders/@{d}+/glycin-*  Px -> nm-applet//&glycin//&glycin//loaders,
+
+  /usr/share/applications/{,**} r,
+  /usr/share/glib-2.0/schemas/gschemas.compiled r,
+  /usr/share/icons/{,**} r,
+  /usr/share/pixmaps/ r,
+  /usr/share/mime/mime.cache r,
+  /usr/share/xkeyboard-config-2/{,**} r,
+
+  /etc/pulse/client.conf r,
+  /etc/machine-id r,
+  /etc/udev/udev.conf r,
+
+  /var/cache/fontconfig/@{hex32}-le64.cache-9 r,
+  /var/lib/dbus/machine-id r,
+
+  owner @{HOME}/.icons/ r,
+  owner @{HOME}/.icons/default/index.theme r,
+
+  owner @{user_share_dirs}/applications/ r,
+  owner @{user_share_dirs}/applications/*.desktop r,
+  owner @{user_share_dirs}/recently-used.xbel r,
+  owner @{user_share_dirs}/sddm/xorg-session.log w,
+  owner @{user_share_dirs}/sddm/wayland-session.log w,
+
+  owner @{user_config_dirs}/ibus/bus/ r,
+  owner @{user_config_dirs}/user-dirs.dirs r,
+  owner @{user_config_dirs}/pulse/cookie rwk,
+
+  owner @{run}/user/@{uid}/pulse/ r,
+
+  @{run}/udev/data/n3 r,
+  @{run}/udev/data/+pci:0000:05:00.0 r,
+  @{run}/udev/data/+pci:0000:00:*.3 r,
+  @{run}/udev/data/+pci:0000:02:00.0 r,
+
+  owner @{PROC}/@{pid}/cgroup r,
+
+  /dev/shm/ r,
+  owner /dev/tty@{u8} rw,
+
+  deny owner @{HOME}/.Xdefaults r,
+  deny owner @{HOME}/.icons r,
+  deny @{sys}/fs/cgroup/user.slice/user-@{uid}.slice/session-@{int}.scope/cpu.max r,
+  deny @{sys}/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max r,
+  deny @{sys}/fs/cgroup/user.slice/cpu.max r,
+
+  include if exists <local/nm-applet>
+}
+
+# vim:syntax=apparmor
