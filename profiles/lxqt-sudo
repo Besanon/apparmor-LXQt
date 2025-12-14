@@ -1,0 +1,50 @@
+# apparmor.d - Full set of apparmor profiles
+# Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
+# Copyright (C) 2024 Besanon  <m231009ts@mailfence.com>
+# SPDX-License-Identifier: GPL-2.0-only
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+@{exec_path} = @{bin}/lxqt-sudo 
+profile lxqt-sudo @{exec_path} flags=(attach_disconnected, complain) {
+  include <abstractions/base>
+  include <abstractions/bus-accessibility>
+  include <abstractions/consoles>
+  include <abstractions/lxqt>
+
+  signal (send) set=(int,kill) peer=lxqt-sudo//sudo,
+
+  @{exec_path}				mr,
+
+  @{bin}/sudo         Cx -> sudo,
+
+  owner /tmp/@{int}  				r,
+
+  /dev/tty					rw,
+  /dev/pts/@{u8} 				rwk,
+  /dev/ptmx rw,
+
+  profile sudo flags=(complain) {
+    include <abstractions/base>
+    include <abstractions/app/sudo>
+
+    capability sys_ptrace,
+
+    signal (receive) set=(int,kill) peer=lxqt-sudo,
+
+    ptrace read peer=unconfined,
+
+    @{bin}/su   rPx,
+    @{bin}/sudo rPx,
+
+    @{sh_path}  rix,
+
+    include if exists <local/lxqt-sudo_sudo>
+  }
+
+  include if exists <local/lxqt-sudo>
+}
+
+# vim:syntax=apparmor
