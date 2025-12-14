@@ -1,0 +1,114 @@
+# apparmor.d - Full set of apparmor profiles
+# Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
+# Copyright (C) 2024 Besanon  <m231009ts@mailfence.com>
+# SPDX-License-Identifier: GPL-2.0-only
+
+abi <abi/4.0>,
+
+include <tunables/global>
+
+@{exec_path} = @{bin}/lxqt-panel 
+profile lxqt-panel @{exec_path} flags=(attach_disconnected, complain) {
+  include <abstractions/base>
+  include <abstractions/app-launcher-user>
+  include <abstractions/audio-client>
+  include <abstractions/dconf-write>
+  include <abstractions/fontconfig-cache-read>
+  include <abstractions/lxqt>
+  include <abstractions/nameservice-strict>
+  include <abstractions/thumbnails-cache-read>
+
+  network inet dgram,
+  network inet stream,
+  network netlink raw,
+  network packet dgram,
+
+  @{exec_path} 					mr,
+
+  @{bin}/sudo rCx -> root,
+
+  @{lib}/lxqt-panel/*.so 			mr,     # LXQT-Plugins
+  @{lib}/lxqt-config/*.so 			mr,     # LXQT-Plugins
+
+  /usr/share/applications/{,**} r,
+  /usr/share/icons/{,**} r,
+  /usr/share/qt6/translations/{,**} r,
+  /usr/share/desktop-directories/{,**}                  r,
+  /usr/share/lxqt/{,**}                          r,
+  /usr/share/hplip/data/images/128x128/hp_logo.png r,
+
+  /etc/xdg/lxqt/panel.conf r,
+
+  /etc/fstab                                            r,
+  /etc/udev/udev.conf 					r,
+  /etc/machine-id                                       r,
+  /etc/xdg/lxqt-qtxdg.conf                              r,
+  /etc/xdg/menus/**.menu                                r,
+  /etc/xdg/menus/applications-merged/                   r,
+  /etc/xdg/ui/uistandards.rc                            r,
+
+  /var/lib/dbus/machine-id 				r,
+
+  /opt/tor/tor-browser/Browser/browser/chrome/icons/default/*.png		r,
+  /opt/tormedium/tor-browser/Browser/browser/chrome/icons/default/*.png		r,
+
+  owner @{HOME}/ r,
+  owner @{user_desktop_dirs}/*.desktop                                            rw,
+  owner @{user_desktop_dirs}/#@{int} 						rw,
+  owner @{user_desktop_dirs}/*.desktop l -> @{HOME}/Desktop/#@{int},	
+
+  owner @{user_config_dirs}/share/desktop-directories/*.directory               r,
+  owner @{user_config_dirs}/share/gvfs-metadata/{,*}                            r,
+  owner @{user_config_dirs}/menus/*.menu                                        rw,
+  owner @{user_config_dirs}/menus/applications-merged/                          r,
+
+  owner @{user_config_dirs}/lxqt/#@{int}					rwk, 
+  owner @{user_config_dirs}/lxqt/panel.conf rwk,
+  owner @{user_config_dirs}/lxqt/panel.conf.lock 				rwk,
+  owner @{user_config_dirs}/lxqt/panel.conf.@{rand6} rwkl -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/pulse/{,**}						rwk,
+  owner @{user_config_dirs}/user-dirs.dirs r,
+
+  owner @{user_share_dirs}/applications/ r,
+  owner @{user_share_dirs}/applications/*.desktop r,
+  owner @{user_share_dirs}/sddm/wayland-session.log w,
+
+  @{run}/mount/utab 					r,
+  @{run}/udev/data/+*:* r,                # Identifies all subsystems
+  @{run}/udev/data/c@{int}:@{int} r,      # Identifies all character devices
+  @{run}/udev/data/b@{int}* r,
+
+  @{sys}/class/i2c-adapter/ 							r,
+  @{sys}/devices/@{pci}/ata1/host0/target0:0:0/0:0:0:0/block/sda/uevent r,
+  @{sys}/devices/system/cpu/cpufreq/policy@{int}/scaling_{cur,min,max}_freq 	r,
+  @{sys}/devices/@{pci}/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda@{int}/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/**/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/host@{int}/target@{int}:0:0/4:0:0:0/block/sdb/uevent r,
+
+  @{PROC}/@{pid}/fd/					r,	
+  @{PROC}/@{pid}/net/dev 				r,
+  owner @{PROC}/@{pid}/mounts 				r,
+  owner @{PROC}/@{pid}/mountinfo 			r,
+  owner @{PROC}/@{pid}/cmdline 				r,
+
+  /tmp/#@{int} rw,
+  owner /tmp/pulse-@{rand12}/				rw, 	
+
+  owner /dev/tty 						rw,
+  owner /dev/tty@{int} rw,
+  /dev/snd/controlC@{int}                               rw,
+
+  profile root flags=(complain) {
+    include <abstractions/base>
+    include <abstractions/app/sudo>
+
+    @{bin}/lsblk rPx,
+
+    include if exists <local/lxqt-panel_root>
+  }
+
+  include if exists <local/lxqt-panel>
+}
+
+# vim:syntax=apparmor
