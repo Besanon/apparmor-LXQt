@@ -47,11 +47,13 @@ profile lxqt-powermanagement @{exec_path} flags=(attach_disconnected, complain) 
   @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.4/usb@{int}/**/uevent r,
 
   @{sys}/devices/@{pci}/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda@{int}/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/host@{int}/target@{int}:0:0/4:0:0:0/block/sdb/uevent r,
 
   @{run}/mount/utab r,
+  @{run}/udev/data/c189@{busname} r,
 
   owner @{PROC}/@{pid}/mounts                           r,
   owner @{PROC}/@{pid}/mountinfo   r,
