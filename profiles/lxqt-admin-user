@@ -32,6 +32,8 @@ profile lxqt-admin-user @{exec_path} flags=(complain) {
 
     @{bin}/lxqt-admin-user-helper	rPx,
 
+    @{PROC}/@{pid}/cgroup r,
+
     include if exists <local/lxqt-admin-user_pkexec>
   }
 
