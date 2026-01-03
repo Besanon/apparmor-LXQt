@@ -82,6 +82,7 @@ profile lxqt-panel @{exec_path} flags=(attach_disconnected, complain) {
   @{sys}/devices/@{pci}/ata1/host0/target0:0:0/0:0:0:0/block/sda/uevent r,
   @{sys}/devices/system/cpu/cpufreq/policy@{int}/scaling_{cur,min,max}_freq 	r,
   @{sys}/devices/@{pci}/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda@{int}/uevent r,
+  @{sys}/devices/@{pci}/usb@{int}/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/host@{int}/target@{int}:0:0/4:0:0:0/block/sdb/uevent r,
