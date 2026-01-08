@@ -1,16 +1,16 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2018-2022 Mikhail Morfikov
 # Copyright (C) 2021-2024 Alexandre Pujol <alexandre@pujol.io>
-# Besanon
+# Copyright (C) 2025 Besanon <m231009ts@mailfence.com>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
 
 include <tunables/global>
 
-@{exec_path} = @{lib}/polkit-[0-9]/polkit-agent-helper-[0-9]
-@{exec_path} += @{lib}/polkit-agent-helper-[0-9]
-profile polkit-agent-helper @{exec_path} flags=(attach_disconnected, complain) {
+@{exec_pathpahelp} = @{lib}/polkit-[0-9]/polkit-agent-helper-[0-9]
+@{exec_pathpahelp} += @{lib}/polkit-agent-helper-[0-9]
+profile polkit-agent-helper @{exec_pathpahelp} flags=(attach_disconnected) {
   include <abstractions/base>
   include <abstractions/authentication>
   include <abstractions/bus-system>
@@ -44,7 +44,10 @@ profile polkit-agent-helper @{exec_path} flags=(attach_disconnected, complain) {
        member=AuthenticationAgentResponse2
        peer=(name=:*, label=polkitd),
 
-  @{exec_path} mr,
+  @{exec_pathpahelp} mr,
+
+  #aa:only apparmor>=4.1
+  priority=1 @{sbin}/unix_chkpwd Px ->  polkit-agent-helper//&unix-chkpwd,
 
   owner @{HOME}/.xsession-errors w,
 
