@@ -8,8 +8,8 @@ abi <abi/4.0>,
 
 include <tunables/global>
 
-@{exec_pathLSU} = @{bin}/lxsu
-profile lxsu @{exec_pathLSU} flags=(attach_disconnected) {
+@{exec_path} = @{bin}/lxsu
+profile lxsu @{exec_path} flags=(attach_disconnected) {
   include <abstractions/base>
   include <abstractions/app-launcher-root>
   include <abstractions/app/sudo>
@@ -20,7 +20,7 @@ profile lxsu @{exec_pathLSU} flags=(attach_disconnected) {
   signal receive set=(int  quit term),
   signal receive set=(cont hup)       peer=sudo,
 
-  @{exec_pathLSU} mr,
+  @{exec_path} mr,
 
   @{bin}/@{shells}     Ux,
   @{sbin}/nologin      Px,
