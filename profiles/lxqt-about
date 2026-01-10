@@ -12,19 +12,19 @@ profile lxqt-about @{exec_path} {
   include <abstractions/base>
   include <abstractions/lxqt>
 
-  @{exec_path}                       mr,
+  @{exec_path} mr,
 
-  /usr/share/icons/{,**}                r,
+  /usr/share/icons/{,**} r,
   /usr/share/desktop-directories/{,**}  r,
 
   /etc/xdg/menus/lxqt-applications.menu r,
 
-  owner /var/lib/dbus/machine-id        r,
+  owner /var/lib/dbus/machine-id r,
 
-  /dev/tty                              rw,
-  owner /dev/pts/@{u8}                  rw,
+  /dev/tty rw,
+  owner /dev/pts/@{u8} rw,
 
-  owner /tmp/@{int}                     r,
+  owner /tmp/@{int} r,
 
   include if exists <local/lxqt-about>
 }
