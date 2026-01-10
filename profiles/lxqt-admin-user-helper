@@ -12,20 +12,20 @@ profile lxqt-admin-user-helper @{exec_path} flags=(complain) {
   include <abstractions/base>
   include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
-    
-  @{exec_path}		mr,
 
-  @{bin}/gpasswd 		rPx,
-  @{bin}/passwd 		rPx,
-  @{bin}/useradd		rPx,
-  @{bin}/userdel		rPx,
-  @{sbin}/usermod 		rPx,
-  
-  owner @{sh_path} 		r,
-  
-  owner /tmp/@{int}  		r,
+  @{exec_path} mr,
 
-  /dev/tty			rw,
+  @{bin}/gpasswd rPx,
+  @{bin}/passwd rPx,
+  @{bin}/useradd rPx,
+  @{bin}/userdel rPx,
+  @{sbin}/usermod rPx,
+
+  owner @{sh_path} r,
+
+  owner /tmp/@{int} r,
+
+  /dev/tty rw,
 
   include if exists <local/lxqt-admin-user-helper>
 }
