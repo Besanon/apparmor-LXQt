@@ -14,49 +14,49 @@ profile lxqt-config @{exec_path} flags=(complain) {
   include <abstractions/lxqt>
   include <abstractions/bus-accessibility>
   include <abstractions/nameservice-strict>
-    
-  @{exec_path}				mr,
 
-  @{bin}/lxqt-admin-user			rPx,
-  @{bin}/ibus-setup				rPx,
-  @{bin}/lxqt-config-monitor			rPx,
-  @{bin}/pcmanfm-qt				rPx,
-  @{bin}/lxqt-admin-time 			rPx,
-  @{bin}/lxqt-config-input			rPx,
-  @{bin}/lxqt-config-locale			rPx,
-  @{bin}/lxqt-config-brightness			rPx,
-  @{bin}/lxqt-config-session			rPx,
-  @{bin}/lxqt-config-file-associations		rPx,
-  @{bin}/lxqt-config-powermanagement		rPx,
-  @{bin}/lxqt-config-appearance			rPx,
-  @{bin}/lxqt-config-globalkeyshortcuts		rPx,
-  @{bin}/lxqt-config-notificationd		rPx,
-  @{bin}/obconf-qt				rPx,
-  @{bin}/nm-connection-editor			rPx,
-  @{bin}/pavucontrol				rPx,
-  @{bin}/pavucontrol-qt				rPx,
-  @{bin}/system-config-printer			rPx,
-  @{bin}/nm-connection-editor			rPx,
-  @{bin}/ControlPanel				rPx,  
-  @{bin}/qt6ct					rix,
-  @{bin}/xdg-open 				rpx,
-  
-  /etc/xdg/menus/lxqt-config.menu  		r,
+  @{exec_path} mr,
 
-  /usr/share/desktop-directories/lxqt-* 	r,
+  @{bin}/lxqt-admin-user rPx,
+  @{bin}/ibus-setup		rPx,
+  @{bin}/lxqt-config-monitor	rPx,
+  @{bin}/pcmanfm-qt	rPx,
+  @{bin}/lxqt-admin-time rPx,
+  @{bin}/lxqt-config-input rPx,
+  @{bin}/lxqt-config-locale	rPx,
+  @{bin}/lxqt-config-brightness	rPx,
+  @{bin}/lxqt-config-session	rPx,
+  @{bin}/lxqt-config-file-associations rPx,
+  @{bin}/lxqt-config-powermanagement rPx,
+  @{bin}/lxqt-config-appearance	rPx,
+  @{bin}/lxqt-config-globalkeyshortcuts	rPx,
+  @{bin}/lxqt-config-notificationd	rPx,
+  @{bin}/obconf-qt	rPx,
+  @{bin}/nm-connection-editor	rPx,
+  @{bin}/pavucontrol rPx,
+  @{bin}/pavucontrol-qt	rPx,
+  @{bin}/system-config-printer	rPx,
+  @{bin}/nm-connection-editor	rPx,
+  @{bin}/ControlPanel	rPx,
+  @{bin}/qt6ctrix,
+  @{bin}/xdg-open rpx,
+
+  /etc/xdg/menus/lxqt-config.menu r,
+
+  /usr/share/desktop-directories/lxqt-* r,
 
   owner @{user_config_dirs}/lxqt/#@{int}	rwk,
   owner @{user_config_dirs}/lxqt/lxqt-config.conf rw,
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.@{rand6} rwkl -> @{user_config_dirs}/lxqt/#@{int},
-  owner @{user_config_dirs}/qt6ct/#@{int}       rw,
-  owner @{user_config_dirs}/qt6ct/qt6ct.conf    rw,
+  owner @{user_config_dirs}/qt6ct/#@{int} rw,
+  owner @{user_config_dirs}/qt6ct/qt6ct.conf  rw,
   owner @{user_config_dirs}/qt6ct/qt6ct.conf.lock rwk,
   owner @{user_config_dirs}/qt6ct/qt6ct.conf.@{rand6} rwl -> @{user_config_dirs}/qt6ct/#@{int},
 
-  owner /tmp/@{int}  		       		r,
+  owner /tmp/@{int} r,
 
-  /dev/tty					rw,
+  /dev/tty	rw,
 
   include if exists <local/lxqt-config>
 }
