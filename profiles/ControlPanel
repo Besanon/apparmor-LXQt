@@ -15,25 +15,26 @@ profile ControlPanel @{exec_path} {
   include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
   include <abstractions/qt5-shader-cache>
-    
-  @{exec_path}							mr,
+
+  @{exec_path}  mr,
 
   /usr/share/desktop-directories/lxqt-* r,
 
-  /etc/xdg/menus/lxqt-config.menu  		r,
+  /etc/xdg/menus/lxqt-config.menu  r,
 
   # only for xfe file manager:
   owner @{HOME}/.foxrc/ rw,
   owner @{HOME}/.foxrc/Desktop 			rw,
 
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.lock rwk,
-  
-  owner /tmp/@{int}  					r,
 
-  /dev/pts/@{int}						rw,
-  /dev/tty								rw,
+  owner /tmp/@{int}  r,
+
+  /dev/pts/@{int}  rw,
+  /dev/tty  rw,
 
   include if exists <local/ControlPanel>
 }
 
+# vim:syntax=apparmor
 # vim:syntax=apparmor
