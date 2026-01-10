@@ -8,7 +8,7 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/kwin_x11
-profile kwin_x11 /{,usr/}bin/kwin_x11 {
+profile kwin_x11 @{exec_path} {
   include <abstractions/base>
   include <abstractions/audio-client>
   include <abstractions/bus-accessibility>
