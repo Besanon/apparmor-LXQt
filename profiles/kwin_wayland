@@ -47,8 +47,8 @@ profile kwin_wayland @{exec_path} flags=(attach_disconnected, mediate_deleted) {
 
   @{exec_path} mr,
 
-  @{lib}/kwin_killer_helper rix,  # NEW
-  /etc/pulse/client.conf r, # NEW
+  @{lib}/kwin_killer_helper rix,
+  /etc/pulse/client.conf r,
   /etc/xdg/Xwayland-session.d/00-at-spi Cx -> at-spi,
   /etc/xdg/Xwayland-session.d/00-pulseaudio-x11 Cx -> pulseaudio,
   /etc/xdg/Xwayland-session.d/10-ibus-x11 Cx -> ibus,
@@ -66,9 +66,9 @@ profile kwin_wayland @{exec_path} flags=(attach_disconnected, mediate_deleted) {
   /usr/share/libinput/{,**} r,
   /usr/share/pipewire/client.conf r,
   /usr/share/plasma/desktoptheme/** r,
-  /usr/share/lxqt/*.conf r,  # NEW
-  /usr/share/sounds/freedesktop/index.theme r, # NEW
-  /usr/share/sounds/freedesktop/stereo/dialog-warning.oga r, #NEW
+  /usr/share/lxqt/*.conf r,
+  /usr/share/sounds/freedesktop/index.theme r,
+  /usr/share/sounds/freedesktop/stereo/dialog-warning.oga r,
 
   /etc/pipewire/client.conf.d/ r,
   /etc/xdg/** r,
@@ -95,7 +95,7 @@ profile kwin_wayland @{exec_path} flags=(attach_disconnected, mediate_deleted) {
 
   owner @{user_cache_dirs}/ r,
   owner @{user_cache_dirs}/#@{int} rwk,
-  owner @{user_cache_dirs}/drkonqi/application-not-responding/* rw, #NEW
+  owner @{user_cache_dirs}/drkonqi/application-not-responding/* rw,
   owner @{user_cache_dirs}/ksvg-elements rw,
   owner @{user_cache_dirs}/ksvg-elements.lock rwk,
   owner @{user_cache_dirs}/ksvg-elements.@{rand6} rwkl -> @{user_cache_dirs}/#@{int},
@@ -107,7 +107,7 @@ profile kwin_wayland @{exec_path} flags=(attach_disconnected, mediate_deleted) {
   owner @{user_cache_dirs}/plasma-svgelements rw,
   owner @{user_cache_dirs}/plasma-svgelements.@{rand6} rwl -> @{user_cache_dirs}/#@{int},
   owner @{user_cache_dirs}/plasma-svgelements.lock rwk,
-  owner @{user_cache_dirs}/event-sound-cache.tdb.@{hex32}.@{arch}-pc-linux-gnu rwk,  #NEW
+  owner @{user_cache_dirs}/event-sound-cache.tdb.@{hex32}.@{arch}-pc-linux-gnu rwk,
 
   owner @{user_config_dirs}/#@{int} rwl,
   owner @{user_config_dirs}/breezerc r,
@@ -131,7 +131,7 @@ profile kwin_wayland @{exec_path} flags=(attach_disconnected, mediate_deleted) {
   owner @{user_share_dirs}/kscreen/* r,
   owner @{user_share_dirs}/kwin/scripts/{,**} r,
 
-  /dev/shm/ r, # NEW
+  /dev/shm/ r,
   owner /dev/shm/.org.chromium.Chromium.@{rand6} rw,
 
   @{att}@{run}/systemd/inhibit/@{int}.ref rw,
