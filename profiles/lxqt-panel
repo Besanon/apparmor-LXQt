@@ -54,7 +54,7 @@ profile lxqt-panel @{exec_path} {
 
   owner @{HOME}/ r,
   owner @{user_desktop_dirs}/*.desktop rwk,
-  owner @{user_desktop_dirs}/#@{int} 	rw,
+  owner @{user_desktop_dirs}/#@{int} rw,
   owner @{user_desktop_dirs}/*.desktop l -> @{HOME}/Desktop/#@{int},	
 
   owner @{user_config_dirs}/share/desktop-directories/*.directory               r,
