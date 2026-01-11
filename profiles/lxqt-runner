@@ -12,11 +12,12 @@ profile lxqt-runner @{exec_path} flags=(attach_disconnected, complain) {
   include <abstractions/base>
   include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
+  include <abstractions/nameservice-strict>
 
-  @{exec_path}				mr,
+  @{exec_path} mr,
 
-  /usr/share/desktop-directories/ 		r,
-  /usr/share/desktop-directories/{,**} 		r,
+  /usr/share/desktop-directories/ r,
+  /usr/share/desktop-directories/{,**} 	r,
 
   /etc/xdg/menus/lxqt-applications.menu 	r,
 
@@ -31,7 +32,7 @@ profile lxqt-runner @{exec_path} flags=(attach_disconnected, complain) {
    
   owner /tmp/@{int}  				r,
 
-  /dev/tty					rw,
+  /dev/tty rw,
   owner /dev/tty@{u8} rw,
 
   include if exists <local/lxqt-runner>
