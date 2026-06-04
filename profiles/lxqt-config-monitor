@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,11 +8,12 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-config-monitor
-profile lxqt-config-monitor @{exec_path} flags=(complain) {
-  include <abstractions/base>
-  include <abstractions/bus-accessibility>
+@{att} = ""
+profile lxqt-config-monitor /{,usr/}bin/lxqt-config-monitor {
+  include <abstractions/base-strict>
   include <abstractions/lxqt>
   include <abstractions/qt5-shader-cache>
+  include <abstractions/bus-accessibility>
   include <abstractions/graphics>
   
   signal (read) set=(kill,term) peer=lxqt-session,
@@ -35,9 +36,13 @@ profile lxqt-config-monitor @{exec_path} flags=(complain) {
 
   owner /tmp/@{int}  				r,
 
+   @{PROC}/sys/kernel/random/boot_id r,
+
   /dev/tty					rw,
 
   include if exists <local/lxqt-config-monitor>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
