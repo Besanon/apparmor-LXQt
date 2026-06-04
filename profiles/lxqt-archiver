@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,8 +8,9 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-archiver
-profile lxqt-archiver @{exec_path} flags=(complain) {
-  include <abstractions/base>
+@{att} = /
+profile lxqt-archiver /{,usr/}bin/lxqt-archiver flags=(attach_disconnected, attach_disconnected.path=@{att}) {
+  include <abstractions/base-strict>
   include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
@@ -18,40 +19,48 @@ profile lxqt-archiver @{exec_path} flags=(complain) {
   include <abstractions/user-read-strict>
   include <abstractions/user-write-strict>
   
-  @{exec_path} mr,
+  @{exec_path}		mr,
 
   @{bin}/mv  rix,
   @{bin}/rm  rix,
-  @{bin}/tar	rPx,
-  @{bin}/unzip rix,
+  @{bin}/tar			rix,
+  @{bin}/unzip			rix,
+  @{bin}/7z 			rix,
+  @{lib}/7zip/7z rix,
 
   /usr/share/lxqt-archiver/translations/lxqt-archiver_de.qm r,
   /usr/share/libfm-qt6/translations/libfm-qt_de.qm r,
-  /usr/share/thumbnailers/ r,
-  /usr/share/thumbnailers/*	r,
+  /usr/share/thumbnailers/ 	 r,
+  /usr/share/thumbnailers/*	 r,
+  
+  /etc/fstab 			 r,
 
-  /etc/fstab r,
-
-  owner @{HOME}/ r,
-  owner @{HOME}/Downloads/.fr-@{rand6}/ rw,
+  owner @{HOME}/ 		 r,
 
   owner @{user_config_dirs}/lxqt/#@{int} rwk,
   owner @{user_config_dirs}/lxqt/archiver.conf rw,
   owner @{user_config_dirs}/lxqt/archiver.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/archiver.conf l -> @{user_config_dirs}/lxqt/#@{int},
 
+  owner @{user_cache_dirs}/.??-@{rand6}/ rw,
+  owner @{user_cache_dirs}/.??-@{rand6}/file-list rw,
+
   owner @{PROC}/@{pid}/mountinfo r,
-  owner @{PROC}/@{pid}/mounts r,
+  owner @{PROC}/@{pid}/mounts 	 r,
 
-  owner /tmp/@{int} r,
-  owner /tmp/lxqt-archiver-@{int}/ rwk,
+  owner /tmp/@{int}  		 r,
+  owner /tmp/lxqt-archiver-@{int}/ rw,
 
-  /dev/tty rw,
+  /dev/tty			 rw,
+  owner /dev/tty@{u16} rw,
 
   deny /usr/share/gvfs/remote-volume-monitors/ r,
+  deny owner @{user_share_dirs}/gvfs-metadata/home r,
   deny @{HOME}/.* r,
 
   include if exists <local/lxqt-archiver>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
