@@ -1,38 +1,38 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
 
 include <tunables/global>
 
-@{exec_path} = @{bin}/lxqt-admin-time
-profile lxqt-admin-time @{exec_path} flags=(complain) {
-  include <abstractions/base>
+@{exec_path} = @{bin}/lxqt-admin-time 
+@{att} = ""
+profile lxqt-admin-time /{,usr/}bin/lxqt-admin-time {
+  include <abstractions/base-strict>
   include <abstractions/lxqt>
   include <abstractions/bus-accessibility>
   include <abstractions/nameservice-strict>
 
-  ptrace read peer=lxqt-admin-time,
+  ptrace read peer=lxqt-admin-time,  
 
-  @{exec_path} mr,
-
-  @{bin}/lxqt-admin-time-helper	rPx,
-  @{bin}/pkexec Cx -> pkexec,
+  @{exec_path}			mr,
+  
+  @{bin}/lxqt-admin-time-helper		rPx,
+  @{bin}/pkexec                     Cx -> pkexec,
 
   /etc/timezone r,
 
   owner @{user_config_dirs}/lxqt/#@{int} rwk,
   owner @{user_config_dirs}/lxqt/TimeDate.conf rwkl -> @{user_config_dirs}/lxqt/#@{int},
   owner @{user_config_dirs}/lxqt/TimeDate.conf.lock rwk,
+  owner /tmp/@{int}  		       r,
 
-  owner /tmp/@{int} r,
+  /dev/tty				rw,
 
-  /dev/tty rw,
-
-  profile pkexec flags=(complain) {
-    include <abstractions/base>
+  profile pkexec {
+    include <abstractions/base-strict>
     include <abstractions/app/pkexec>
 
     @{bin}/lxqt-admin-time-helper rPx,
@@ -42,7 +42,10 @@ profile lxqt-admin-time @{exec_path} flags=(complain) {
     include if exists <local/lxqt-admin-time_pkexec>
   }
 
+
   include if exists <local/lxqt-admin-time>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
