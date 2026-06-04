@@ -1,15 +1,16 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2019-2022 Mikhail Morfikov
 # Copyright (C) 2021-2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2025 Besanon  <m231009ts@mailfence.com>
+# Copyright (C) 2025 Besanon <set508@proton.me
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
 
 include <tunables/global>
 
-@{exec_path} = @{bin}/lxsudo
-profile lxsudo @{exec_path} flags=(attach_disconnected) {
+@{exec_pathLSUD} = @{bin}/lxsudo
+@{att} = /att/lxsudo/
+profile lxsudo @{exec_pathLSUD} flags=(attach_disconnected) {
   include <abstractions/base>
   include <abstractions/app-launcher-root>
   include <abstractions/app/sudo>
@@ -26,8 +27,6 @@ profile lxsudo @{exec_path} flags=(attach_disconnected) {
 
   signal send set=(winch, hup, term),
 
-  @{exec_path} mr,
-
   @{bin}/@{shells}                  rUx,
   @{lib}/**                         PUx,
   /opt/*/**                         PUx,
@@ -43,7 +42,6 @@ profile lxsudo @{exec_path} flags=(attach_disconnected) {
   owner /var/lib/sudo/lectured/@{uid} rw,
 
   @{run}/ r,
-
   @{run}/systemd/sessions/* r,
   @{run}/systemd/sessions/?@{int}.ref rw,
 
@@ -51,5 +49,7 @@ profile lxsudo @{exec_path} flags=(attach_disconnected) {
 
   include if exists <local/lxsudo>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
