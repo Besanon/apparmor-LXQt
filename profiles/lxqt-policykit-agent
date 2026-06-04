@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,16 +8,16 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-policykit-agent
-profile lxqt-policykit-agent @{exec_path} flags=(attach_disconnected, complain) {
-  include <abstractions/base>
-  include <abstractions/consoles>
+@{att} = /att/lxqt-policykit-agent/
+profile lxqt-policykit-agent /{,usr/}bin/lxqt-policykit-agent flags=(attach_disconnected, attach_disconnected.path=@{att}) {
+  include <abstractions/attached/base>
+  include <abstractions/bus/system/org.freedesktop.PolicyKit1>
+  include <abstractions/attached/consoles>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/graphics>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
   include <abstractions/qt5-compose-cache-write>
-
-  include <abstractions/bus/system/org.freedesktop.PolicyKit1>
 
   network inet dgram,
   network inet stream,
@@ -27,8 +27,52 @@ profile lxqt-policykit-agent @{exec_path} flags=(attach_disconnected, complain) 
 
   signal (send) set=(term, kill) peer=polkit-agent-helper,
 
-  #aa:dbus own bus=session name=org.kde.polkit-kde-authentication-agent-@{int}
-  #aa:dbus talk bus=system name=org.freedesktop.PolicyKit1 label=polkitd
+  include <abstractions/bus/session/own>
+
+  dbus bind bus=session name=org.kde.polkit-kde-authentication-agent-@{int}{,.*},
+  dbus receive bus=session path=/org/kde/polkit-kde-authentication-agent-@{int}{,/**}
+       interface=org.kde.polkit-kde-authentication-agent-@{int}{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/kde/polkit-kde-authentication-agent-@{int}{,/**}
+       interface=org.kde.polkit-kde-authentication-agent-@{int}{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/kde/polkit-kde-authentication-agent-@{int}{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/kde/polkit-kde-authentication-agent-@{int}{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="@{busname}"),
+  dbus receive bus=session path=/org/kde/polkit-kde-authentication-agent-@{int}{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.kde.polkit-kde-authentication-agent-@{int}{,.*}}"),
+  dbus send bus=session path=/org/kde/polkit-kde-authentication-agent-@{int}{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  unix type=stream peer=(label=polkitd),
+
+  dbus (send receive) bus=system path=/org/freedesktop/PolicyKit1{,/**}
+       interface=org.freedesktop.PolicyKit1{,.*}
+       peer=(name="{@{busname},org.freedesktop.PolicyKit1{,.*},org.freedesktop.DBus}", label=polkitd),
+  dbus (send receive) bus=system path=/org/freedesktop/PolicyKit1{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.PolicyKit1{,.*},org.freedesktop.DBus}", label=polkitd),
+  dbus send bus=system path=/org/freedesktop/PolicyKit1{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="{@{busname},org.freedesktop.PolicyKit1{,.*},org.freedesktop.DBus}", label=polkitd),
+  dbus send bus=system path=/org/freedesktop/PolicyKit1{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.freedesktop.PolicyKit1{,.*},org.freedesktop.DBus}", label=polkitd),
+  dbus receive bus=system path=/org/freedesktop/PolicyKit1{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.PolicyKit1{,.*},org.freedesktop.DBus}", label=polkitd),
 
   @{exec_path} 			mr,
 
@@ -37,10 +81,13 @@ profile lxqt-policykit-agent @{exec_path} flags=(attach_disconnected, complain) 
   /usr/share/lxqt/translations/lxqt-policykit-agent/lxqt-policykit-agent_de.qm r,
 
   /etc/machine-id 			r,
+  /etc/xdg/plasmarc r,
 
   /var/lib/dbus/machine-id 		r,
 
   owner @{user_cache_dirs}/icon-cache.kcache rw,
+  owner @{user_cache_dirs}/qtshadercache-*/* r,
+
   owner @{user_config_dirs}/qt5ct/{,**} r,
 
   owner /tmp/#@{int} 			rw,
@@ -60,5 +107,7 @@ profile lxqt-policykit-agent @{exec_path} flags=(attach_disconnected, complain) 
 
   include if exists <local/lxqt-policykit-agent>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
