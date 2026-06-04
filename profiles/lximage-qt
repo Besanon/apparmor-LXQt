@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,22 +8,48 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lximage-qt
-profile lximage-qt @{exec_path} {
-  include <abstractions/base>
+@{att} = ""
+profile lximage-qt /{,usr/}bin/lximage-qt {
+  include <abstractions/base-strict>
   include <abstractions/bus-accessibility>
-  include <abstractions/lxqt>
   include <abstractions/fontconfig-cache-read>
+  include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
   include <abstractions/user-read-strict>
   include <abstractions/user-write-strict>
   include <abstractions/thumbnails-cache-read>
   include <abstractions/trash-strict>
 
-  #aa:dbus own bus=session name=org.lxqt.LXImage
+  include <abstractions/bus/session/own>
 
-  @{exec_path}  mr,
-  @{lib}/menu-cache/menu-cached  mr,
-  @{bin}/evince-thumbnailer  rPx,
+  dbus bind bus=session name=org.lxqt.LXImage{,.*},
+  dbus receive bus=session path=/org/lxqt/LXImage{,/**}
+       interface=org.lxqt.LXImage{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/lxqt/LXImage{,/**}
+       interface=org.lxqt.LXImage{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/lxqt/LXImage{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/lxqt/LXImage{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="@{busname}"),
+  dbus receive bus=session path=/org/lxqt/LXImage{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.lxqt.LXImage{,.*}}"),
+  dbus send bus=session path=/org/lxqt/LXImage{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  
+  @{exec_path}				mr,
+
+  @{lib}/menu-cache/menu-cached  		mr,
+  @{bin}/evince-thumbnailer 			rPx,
 
   /usr/share/icons/{,**}  r,
   /usr/share/desktop-directories/{,**} r,
@@ -42,22 +68,23 @@ profile lximage-qt @{exec_path} {
 
   owner @{HOME}/filename.config r,
 
-  owner @{user_cache_dirs}/thumbnails/normal/**  rwk,
-  owner @{user_config_dirs}/#@{int} rwk,
-  owner @{user_config_dirs}/QtProject.conf rw,
-  owner @{user_config_dirs}/QtProject.conf.lock rwk, 
-  owner @{user_config_dirs}/QtProject.conf.@{rand6} rwkl -> @{user_config_dirs}/#@{int},
+  owner @{user_cache_dirs}/thumbnails/normal/** 	rwk,
+  owner @{user_config_dirs}/#@{int} 			rwk,
+  owner @{user_config_dirs}/QtProject.conf 		rw,
+  owner @{user_config_dirs}/QtProject.conf.lock 	rwk, 
+  owner @{user_config_dirs}/QtProject.conf.@{rand6} rwkl -> @{user_config_dirs}/#@{int}, 
   owner @{user_config_dirs}/lxqt-mimeapps.list r,
   owner @{user_config_dirs}/lxqt/filedialog.conf r,
-  owner @{user_config_dirs}/lximage-qt/ rw,
-  owner @{user_config_dirs}/lximage-qt/#@{int}  rwk,
+  owner @{user_config_dirs}/lximage-qt/ 		rw,
+  owner @{user_config_dirs}/lximage-qt/#@{int}		rwk, 
   owner @{user_config_dirs}/lximage-qt/settings.conf 	rw,
   owner @{user_config_dirs}/lximage-qt/settings.conf.lock rwk,
+  owner @{user_config_dirs}/lximage-qt/settings.conf.lock.rmlock rw,
   owner @{user_config_dirs}/lximage-qt/settings.conf l -> @{user_config_dirs}/lximage-qt/#@{int},
   owner @{user_config_dirs}/lximage-qt/settings.conf.@{rand6} rw,
-  owner @{user_config_dirs}/lximage-qt/settings.conf.@{rand6} kl -> @{user_config_dirs}/lximage-qt/#@{int},
+  owner @{user_config_dirs}/lximage-qt/settings.conf.@{rand6} kl -> @{user_config_dirs}/lximage-qt/#@{int}, 
   owner @{user_config_dirs}/lximage-qt/QtProject.conf.@{rand6}  rw,
-  owner @{user_config_dirs}/lximage-qt/QtProject.conf.@{rand6}  l -> @{user_config_dirs}/lximage-qt/#@{int},
+  owner @{user_config_dirs}/lximage-qt/QtProject.conf.@{rand6}  l -> @{user_config_dirs}/lximage-qt/#*,
 
   owner @{user_share_dirs}/gvfs-metadata/home r,
   owner @{user_share_dirs}/gvfs-metadata/*.log r,
@@ -67,10 +94,10 @@ profile lximage-qt @{exec_path} {
 
   @{run}/mount/utab r,
 
-  owner /tmp/@{int} r,
+  owner /tmp/@{int}  				r,
   owner /tmp/@{word} rw,
 
-  /dev/tty rw,
+  /dev/tty					rw,
   owner /dev/tty@{int} rw,
 
   deny owner @{HOME}/.* r,
@@ -78,5 +105,7 @@ profile lximage-qt @{exec_path} {
 
   include if exists <local/lximage-qt>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
