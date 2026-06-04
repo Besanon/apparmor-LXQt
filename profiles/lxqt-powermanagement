@@ -1,70 +1,148 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
 
 include <tunables/global>
 
-@{exec_path} = @{bin}/lxqt-powermanagement
-profile lxqt-powermanagement @{exec_path} flags=(attach_disconnected, complain) {
-  include <abstractions/base>
+@{exec_path} = @{bin}/lxqt-powermanagement 
+@{att} = /att/lxqt-powermanagement/
+profile lxqt-powermanagement /{,usr/}bin/lxqt-powermanagement flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
+  include <abstractions/attached/base>
+  include <abstractions/bus-session>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
 
   network netlink raw,
 
-  ptrace (read) peer=lxqt-panel,
+  include <abstractions/bus/session/own>
 
-  #aa:dbus own bus=session name=org.lxqt.lxqt-powermanagement
+  dbus bind bus=session name=org.lxqt.lxqt-powermanagement{,.*},
+  dbus receive bus=session path=/org/lxqt/lxqt-powermanagement{,/**}
+       interface=org.lxqt.lxqt-powermanagement{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/lxqt/lxqt-powermanagement{,/**}
+       interface=org.lxqt.lxqt-powermanagement{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/lxqt/lxqt-powermanagement{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/lxqt/lxqt-powermanagement{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="@{busname}"),
+  dbus receive bus=session path=/org/lxqt/lxqt-powermanagement{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.lxqt.lxqt-powermanagement{,.*}}"),
+  dbus send bus=session path=/org/lxqt/lxqt-powermanagement{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  include <abstractions/bus/session/own>
 
-  @{exec_path}  mr,
+  dbus bind bus=session name=org.freedesktop.PowerManagement{,.*},
+  dbus receive bus=session path=/org/freedesktop/PowerManagement{,/**}
+       interface=org.freedesktop.PowerManagement{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/freedesktop/PowerManagement{,/**}
+       interface=org.freedesktop.PowerManagement{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/freedesktop/PowerManagement{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/freedesktop/PowerManagement{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="@{busname}"),
+  dbus receive bus=session path=/org/freedesktop/PowerManagement{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.freedesktop.PowerManagement{,.*}}"),
+  dbus send bus=session path=/org/freedesktop/PowerManagement{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+
+  @{exec_path}					mr,
 
   @{lib}/qt6/plugins/platformthemes/*.so mr,
 
-  @{bin}/xset  rPx,
-  @{bin}/pkexec 	rPx,
-  @{bin}/{,ba,da}sh  rix,
-  @{bin}/lxqt-leave  rPx,
-  @{bin}/dbus-launch  rPx,  
-  /etc/udev/udev.conf r,
-  /etc/fstab  r,
+  @{bin}/xset						rPx,
+  @{bin}/pkexec 					rPx,
+  @{bin}/{,ba,da}sh 					rix,
+  @{bin}/lxqt-leave 					rPx,
+  @{bin}/dbus-launch rPx,  
+  /etc/udev/udev.conf 					r,
+  /etc/fstab 						r,
   /etc/xdg/lxqt/lxqt-powermanagement.conf  rw,
+
+  / r,
 
   owner @{user_config_dirs}/lxqt/#@{int} rwk,
   owner @{user_config_dirs}/lxqt/power.conf rw,
   owner @{user_config_dirs}/lxqt/lxqt-powermanagement.conf rw,
 
-  @{run}/systemd/inhibit/*  rw,
+  @{run}/systemd/inhibit/* 				rw,
 
-  @{sys}/class/backlight/  r,
+  @{sys}/class/backlight/ 				r,
   @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/type r,
   @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/max_brightness r,
   @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/bl_power r,
   @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.0/drm/card0/card0-eDP-@{int}/amdgpu_bl0/actual_brightness r,
   @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.4/usb@{int}/uevent r,
   @{sys}/devices/@{pci_bus}/0000:00:08.1/0000:05:00.4/usb@{int}/**/uevent r,
-
+  @{sys}/devices/@{pci_bus}/acpi.video_bus.@{int}/input/input@{int}/uevent r, 
   @{sys}/devices/@{pci}/ata1/host0/target0:0:0/0:0:0:0/block/sda/sda@{int}/uevent r,
+  @{sys}/devices/@{pci}/net/**/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/uevent r,
   @{sys}/devices/@{pci}/usb@{int}/**/*@{busname}/host@{int}/target@{int}:0:0/4:0:0:0/block/sdb/uevent r,
+  @{sys}/devices/@{pci}/sound/card@{int}/uevent r,
+  @{sys}/devices/@{pci}/sound/card@{int}/**/uevent r,
+  @{sys}/devices/@{pci}/**/**/input@{int}/uevent r, 
+  @{sys}/devices/@{pci}/**/**/input/event@{int}/uevent r, 
+  @{sys}/devices/@{pci}/**/**/input/input@{int}/event@{int}/uevent r, 
+  @{sys}/devices/LNXSYSTM:00/LNXPWRBN:00/input/input@{int}/uevent r,
+  @{sys}/devices/LNXSYSTM:00/LNXPWRBN:00/input/input@{int}/event@{int}/uevent r,
+  @{sys}/devices/LNXSYSTM:00/LNXSYBUS:00/**/input/input@{int}/uevent r,
+  @{sys}/devices/LNXSYSTM:00/LNXSYBUS:00/**/input/input@{int}/event@{int}/uevent r,
+  @{sys}/devices/LNXSYSTM:00/LNXSYBUS:00/**/LNXVIDEO:00/input/input@{int}/uevent r,
+  @{sys}/devices/LNXSYSTM:00/LNXSYBUS:00/**/LNXVIDEO:00/input/input@{int}/event@{int}/uevent r,
+  @{sys}/devices/system/cpu/cpu@{int}/uevent r,
+  @{sys}/devices/platform/**/input/input@{int}/uevent r,
+  @{sys}/devices/platform/**/input/input@{int}/event@{int}/uevent r, 
+  @{sys}/devices/platform/**/serio@{int}/input/input@{int}/**/uevent r,
+  @{sys}/devices/platform/**/**/input/input@{int}/uevent r,
+  @{sys}/devices/platform/**/**/**/tty/ttyS@{int}/uevent r,
+  @{sys}/devices/virtual/input/**/uevent r,
+  @{sys}/devices/virtual/sound/**/uevent r,
+  @{sys}/devices/virtual/net/**/uevent r,
+  @{sys}/devices/virtual/tty/**/uevent r,
 
   @{run}/mount/utab r,
   @{run}/udev/data/c189@{busname} r,
   @{run}/udev/data/c189:@{int} r,
 
-  owner @{PROC}/@{pid}/mounts  r,
-  owner @{PROC}/@{pid}/mountinfo  r,
+  owner @{PROC}/@{pid}/mounts                           r,
+  owner @{PROC}/@{pid}/mountinfo   r,
+
+  @{att}@{run}/systemd/inhibit/@{int}.ref rw,
 
   owner /tmp/@{u8}  					r,
 
-  /dev/tty  rw,  
+  /dev/tty						rw,  
   owner /dev/tty@{u8}  rw,
+  owner @{att}/dev/tty@{u8} rw,
 
   include if exists <local/lxqt-powermanagement>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
