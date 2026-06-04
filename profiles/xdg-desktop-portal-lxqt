@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2023-2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -9,8 +9,9 @@ include <tunables/global>
 
 @{exec_path}  = @{lib}/xdg-desktop-portal-lxqt
 @{exec_path} += @{lib}/@{multiarch}/{,libexec/}xdg-desktop-portal-lxqt
-profile xdg-desktop-portal-lxqt @{exec_path} flags=(complain) {
-  include <abstractions/base>
+@{att} = ""
+profile xdg-desktop-portal-lxqt /{{,usr/}lib{,exec,64}/xdg-desktop-portal-lxqt,{,usr/}lib{,exec,64}/*-linux-gnu*/{,libexec/}xdg-desktop-portal-lxqt,{,usr/}lib{,exec,64}/*-linux-gnu*/{,libexec/}xdg-desktop-portal-lxqt} {
+  include <abstractions/base-strict>
   include <abstractions/bus/session/org.gnome.Shell.Introspect>
   include <abstractions/bus/session/org.gtk.vfs.Daemon>
   include <abstractions/graphics>
@@ -24,7 +25,6 @@ profile xdg-desktop-portal-lxqt @{exec_path} flags=(complain) {
   network inet6 stream,
   network netlink raw,
 
-  ptrace read peer=unconfined,
   ptrace read peer=dbus-daemon,
 
   @{exec_path} mr,
@@ -39,5 +39,7 @@ profile xdg-desktop-portal-lxqt @{exec_path} flags=(complain) {
 
   include if exists <local/xdg-desktop-portal-lxqt>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
