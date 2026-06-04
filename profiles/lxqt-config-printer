@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me> 
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,18 +8,20 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-config-printer
-profile lxqt-config-printer @{exec_path} flags=(complain) {
-  include <abstractions/base>
-  include <abstractions/bus-accessibility>
+@{att} = ""
+profile lxqt-config-printer /{,usr/}bin/lxqt-config-printer {
+  include <abstractions/base-strict>
   include <abstractions/lxqt>
-    
-  @{exec_path}			mr,
-  
-  owner /tmp/@{int}  			r,
 
-  /dev/tty				rw,
+  @{exec_path} mr,
+
+  owner /tmp/@{int} r,
+
+  /dev/tty rw,
 
   include if exists <local/lxqt-config-printer>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
