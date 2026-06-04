@@ -8,9 +8,9 @@ abi <abi/4.0>,
 
 include <tunables/global>
 
-@{exec_pathpahelp} = @{lib}/polkit-[0-9]/polkit-agent-helper-[0-9]
-@{exec_pathpahelp} += @{lib}/polkit-agent-helper-[0-9]
-profile polkit-agent-helper @{exec_pathpahelp} flags=(attach_disconnected) {
+@{exec_path} = @{lib}/polkit-[0-9]/polkit-agent-helper-[0-9]
+@{exec_path} += @{lib}/polkit-agent-helper-[0-9]
+profile polkit-agent-helper @{exec_path} flags=(attach_disconnected) {
   include <abstractions/base>
   include <abstractions/authentication>
   include <abstractions/bus-system>
@@ -44,7 +44,7 @@ profile polkit-agent-helper @{exec_pathpahelp} flags=(attach_disconnected) {
        member=AuthenticationAgentResponse2
        peer=(name=:*, label=polkitd),
 
-  @{exec_pathpahelp} mr,
+  @{exec_path} mr,
 
   #aa:only apparmor>=4.1
   priority=1 @{sbin}/unix_chkpwd Px ->  polkit-agent-helper//&unix-chkpwd,
