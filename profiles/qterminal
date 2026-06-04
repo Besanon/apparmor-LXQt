@@ -1,7 +1,7 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Jeroen Rijken
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -9,31 +9,58 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/qterminal
-profile qterminal @{exec_path} flags=(attach_disconnected, complain, mediate_deleted) {
-  include <abstractions/base>
+@{att} = /att/qterminal/
+profile qterminal /{,usr/}bin/qterminal flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
+  include <abstractions/attached/base>
   include <abstractions/audio-client>
   include <abstractions/bus-accessibility>
-  include <abstractions/consoles>
+  include <abstractions/attached/consoles>
   include <abstractions/graphics>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
 
   ptrace (read),
 
   signal (send) set=(hup),
   signal (send) set=(kill) peer=htop,
 
-  #aa:dbus own bus=session name=org.QTerminal-@{int}
+  include <abstractions/bus/session/own>
+
+  dbus bind bus=session name=org.QTerminal-@{int}{,.*},
+  dbus receive bus=session path=/org/QTerminal-@{int}{,/**}
+       interface=org.QTerminal-@{int}{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/QTerminal-@{int}{,/**}
+       interface=org.QTerminal-@{int}{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/QTerminal-@{int}{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/QTerminal-@{int}{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="@{busname}"),
+  dbus receive bus=session path=/org/QTerminal-@{int}{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.QTerminal-@{int}{,.*}}"),
+  dbus send bus=session path=/org/QTerminal-@{int}{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
 
   @{exec_path}                      mr,
-
+  
   @{bin}/@{shells}                      rUx,
+#  @{bin}/@{shells}                      rPx -> shell_users,
   @{browsers_path}                      rPx,
   @{bin}/htop	                        rPx,
   @{bin}/dbus-launch 			rPx,
+  @{bin}/vim 				rPx,
   @{open_path} 				rPx -> child-open-help,
 
-  #aa:exec utempter
+  /{,usr/}lib{,exec,64}/{,*-linux-gnu*/}utempter/utempter Px,
 
   /usr/share/color-schemes/{,**} r,
   /usr/share/kf6/{,**} r,
@@ -74,5 +101,7 @@ profile qterminal @{exec_path} flags=(attach_disconnected, complain, mediate_del
 
   include if exists <local/qterminal>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
