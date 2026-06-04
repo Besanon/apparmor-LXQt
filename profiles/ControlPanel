@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2025 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,33 +8,29 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/ControlPanel
-profile ControlPanel @{exec_path} {
-  include <abstractions/base>
-  include <abstractions/bus-session>
-  include <abstractions/bus-accessibility>
+@{att} = ""
+profile ControlPanel /{,usr/}bin/ControlPanel {
+  include <abstractions/base-strict>
   include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
   include <abstractions/qt5-shader-cache>
+  include <abstractions/bus-session>
+  include <abstractions/bus-accessibility>
+    
+  @{exec_path}				mr,
 
-  @{exec_path}  mr,
+  /etc/xdg/menus/lxqt-config.menu  		r,
 
-  /usr/share/desktop-directories/lxqt-* r,
-
-  /etc/xdg/menus/lxqt-config.menu  r,
-
-  # only for xfe file manager:
-  owner @{HOME}/.foxrc/ rw,
-  owner @{HOME}/.foxrc/Desktop 			rw,
+  /usr/share/desktop-directories/lxqt-* 	r,
 
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.lock rwk,
+  
+  owner /tmp/@{int}  				r,
 
-  owner /tmp/@{int}  r,
-
-  /dev/pts/@{int}  rw,
-  /dev/tty  rw,
+  /dev/pts/@{u8}				rw,
+  /dev/tty					rw,
 
   include if exists <local/ControlPanel>
 }
 
-# vim:syntax=apparmor
 # vim:syntax=apparmor
