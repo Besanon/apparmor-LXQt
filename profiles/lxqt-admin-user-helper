@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,26 +8,29 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-admin-user-helper
-profile lxqt-admin-user-helper @{exec_path} flags=(complain) {
-  include <abstractions/base>
+@{att} = ""
+profile lxqt-admin-user-helper /{,usr/}bin/lxqt-admin-user-helper {
+  include <abstractions/base-strict>
   include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
+    
+  @{exec_path}		mr,
 
-  @{exec_path} mr,
+  @{bin}/gpasswd 		rPx,
+  @{bin}/passwd 		rPx,
+  @{bin}/useradd		rPx,
+  @{bin}/userdel		rPx,
+  @{bin}/passwd 		rPx,
+  @{sbin}/usermod 		rPx,
+  
+  owner @{sh_path} 		r,
+  owner /tmp/@{int}  		r,
 
-  @{bin}/gpasswd rPx,
-  @{bin}/passwd rPx,
-  @{bin}/useradd rPx,
-  @{bin}/userdel rPx,
-  @{sbin}/usermod rPx,
-
-  owner @{sh_path} r,
-
-  owner /tmp/@{int} r,
-
-  /dev/tty rw,
+  /dev/tty			rw,
 
   include if exists <local/lxqt-admin-user-helper>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
