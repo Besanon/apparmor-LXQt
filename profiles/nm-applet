@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2023-2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,23 +8,26 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/nm-applet 
-profile nm-applet @{exec_path} flags=(attach_disconnected) {
-  include <abstractions/base>
-  include <abstractions/consoles>
+@{att} = /att/nm-applet/
+profile nm-applet /{,usr/}bin/nm-applet flags=(attach_disconnected, attach_disconnected.path=@{att}) {
+  include <abstractions/attached/base>
+  include <abstractions/attached/consoles>
   include <abstractions/dconf>
   include <abstractions/bus-system>
   include <abstractions/app/bwrap-glycin>
   include <abstractions/fonts>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/graphics>
-  include <abstractions/gtk>
-  include <abstractions/nameservice-strict>
+  include <abstractions/gtk-strict>
+  include <abstractions/attached/nameservice-strict>
   include <abstractions/network-manager-observe>
   include <abstractions/X-strict>
 
   signal (receive) peer=lxqt-session,
   signal (send) peer=glycin//&glycin//loaders//&nm-applet,
   signal (send receive) set=kill peer=glycin//&nm-applet,
+
+  network inet stream,
 
   dbus receive bus=system path=/org/freedesktop/NetworkManager/ActiveConnection/@{int}
        interface=org.freedesktop.NetworkManager.Connection.Active
@@ -43,12 +46,15 @@ profile nm-applet @{exec_path} flags=(attach_disconnected) {
   @{bin}/bwrap                          Px -> nm-applet//&glycin,
   @{lib}/glycin-loaders/@{d}+/glycin-*  Px -> nm-applet//&glycin//&glycin//loaders,
 
+  /usr/local/share/icons/{,**} r,
   /usr/share/applications/{,**} r,
   /usr/share/glib-2.0/schemas/gschemas.compiled r,
   /usr/share/icons/{,**} r,
   /usr/share/pixmaps/ r,
   /usr/share/mime/mime.cache r,
-  /usr/share/xkeyboard-config-2/{,**} r,
+  /usr/share/p11-kit/modules/ r,
+  /usr/share/p11-kit/modules/* r,
+  /usr/share/themes/Default/gtk-3.0/gtk-keys.css r,
 
   /etc/pulse/client.conf r,
   /etc/machine-id r,
@@ -56,6 +62,8 @@ profile nm-applet @{exec_path} flags=(attach_disconnected) {
 
   /var/cache/fontconfig/@{hex32}-le64.cache-9 r,
   /var/lib/dbus/machine-id r,
+
+  / r,
 
   owner @{HOME}/.icons/ r,
   owner @{HOME}/.icons/default/index.theme r,
@@ -87,8 +95,12 @@ profile nm-applet @{exec_path} flags=(attach_disconnected) {
   deny @{sys}/fs/cgroup/user.slice/user-@{uid}.slice/session-@{int}.scope/cpu.max r,
   deny @{sys}/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max r,
   deny @{sys}/fs/cgroup/user.slice/cpu.max r,
+  deny owner @{PROC}/@{pid}/mountinfo r,
+  deny owner @{user_share_dirs}/gvfs-metadata/uuid-@{uuid} r,
 
   include if exists <local/nm-applet>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
