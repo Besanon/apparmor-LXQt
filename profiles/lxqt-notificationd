@@ -8,7 +8,6 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-notificationd
-##@{att} = ""
 @{att} = /
 profile lxqt-notificationd /{,usr/}bin/lxqt-notificationd flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
   include <abstractions/base-strict>
