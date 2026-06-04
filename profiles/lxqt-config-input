@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,9 +8,10 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-config-input
-profile lxqt-config-input @{exec_path} flags=(complain) {
+@{att} = ""
+profile lxqt-config-input /{,usr/}bin/lxqt-config-input {
   include <abstractions/audio-client>
-  include <abstractions/base>
+  include <abstractions/base-strict>
   include <abstractions/bus/system/org.bluez>
   include <abstractions/bus/system/org.freedesktop.login1>
   include <abstractions/bus-accessibility>
@@ -31,15 +32,15 @@ profile lxqt-config-input @{exec_path} flags=(complain) {
 
   owner @{HOME}/.gtkrc-2.0 rw,
 
-  owner @{user_config_dirs}/lxqt/#@{int}  rwk,
-  owner @{user_config_dirs}/lxqt/lxqt.conf.@{rand6} rw,
   owner @{user_config_dirs}/lxqt/lxqt.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/lxqt.conf.@{rand6} rw,
   owner @{user_config_dirs}/lxqt/session.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
   owner @{user_config_dirs}/lxqt/session.conf.@{rand6} rw,
   owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/lxqt-config-appearance.conf rw,
   owner @{user_config_dirs}/lxqt/lxqt-config-input.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/lxqt-config-input.conf.@{rand6}  rwkl -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/#@{int}  rwk,
   owner @{user_config_dirs}/lxqt/session.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/lxqt-config-input.conf rwl -> @{user_config_dirs}/lxqt/#@{int}, 
   owner @{user_config_dirs}/gtk-3.0/settings.ini rw,
@@ -102,9 +103,9 @@ profile lxqt-config-input @{exec_path} flags=(complain) {
   
   /dev/tty				rw,
 
-  deny @{sys}/class/usbmisc/ r,
-
   include if exists <local/lxqt-config-input>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
