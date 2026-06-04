@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2023 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>  <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,45 +8,44 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/startlxqt
-profile startlxqt @{exec_path} {
-  include <abstractions/base>
-  include <abstractions/freedesktop.org>
+@{att} = /att/startlxqt/
+profile startlxqt /{,usr/}bin/startlxqt {
+  include <abstractions/attached/base>
+  include <abstractions/attached/consoles>
+  include <abstractions/fontconfig-cache-read>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
-  include <abstractions/X-strict>
 
   signal (receive) set=(term) peer=sddm,
 
-  @{exec_path} 				mr,
+  @{exec_path} mr,
 
   @{bin}/xrdb               rPx,
   @{bin}/xsetroot           rPx,
-  @{bin}/xprop 		    	rPx,
-  @{bin}/mkdir		    	rix,
-  @{bin}/dbus-launch 	    rPx,
-  @{bin}/lxqt-session 	    rPx,
-  
-  @{sh_path}		    	rix,
+  @{bin}/xprop              rPx,
+  @{bin}/mkdir              rix,
+  @{sh_path}                rix,
+  @{bin}/lxqt-session       rPx,
+
+  @{bin}/systemctl  rCx -> systemctl,
+  @{bin}/dbus-update-activation-environment  rCx -> dbus,
 
   /usr/share/color-schemes/{,**} r,
   /usr/share/desktop-directories/{,**} r,
-  /usr/share/icu/@{int}.@{int}/*.dat r,
-  /usr/share/mime/{,**} r,
+  /usr/share/kservices5/{,**} r,
 
-  /etc/locale.alias r,
   /etc/machine-id r,
   /etc/xdg/menus/{,**} r,
 
   @{HOME}/ r,
-  owner @{HOME}/.Xauthority r,
 
-  owner @{user_cache_dirs}/ rw,
   owner @{user_cache_dirs}/#@{int} rw,
+        @{user_cache_dirs}/ksycoca5_* rwkl -> @{user_cache_dirs}/#@{int},
 
   owner @{user_config_dirs}/#@{int} rw,
   owner @{user_config_dirs}/lxqt/ rw,
-  owner @{user_config_dirs}/lxqt/** rwkl -> @{user_config_dirs}/kdedefaults/**,
+  owner @{user_config_dirs}/menus/{,**} r,
 
+  owner @{user_share_dirs}/kservices5/{,**} r,
   owner @{user_share_dirs}/sddm/wayland-session.log rw,
   owner @{user_share_dirs}/sddm/xorg-session.log rw,
 
@@ -54,14 +53,32 @@ profile startlxqt @{exec_path} {
   owner /tmp/startlxqt.@{rand6} rwl -> /tmp/#@{int},
 
   owner @{run}/user/@{uid}/ r,
-        @{run}/user/@{uid}/xauth_@{rand6} rl,
-
-        @{PROC}/sys/kernel/core_pattern r,
 
   /dev/tty rw,
-  /dev/tty@{int} rw,
-  
+  /dev/tty@{u8} rw,
+
   include if exists <local/startlxqt>
+
+  profile systemctl flags=(attach_disconnected, attach_disconnected.path=@{att}) {
+    include <abstractions/attached/base>
+    include <abstractions/app/systemctl>
+
+    owner @{user_share_dirs}/sddm/xorg-session.log w,
+
+    include if exists <local/startlxqt_systemctl>
+  }
+
+  profile dbus {
+    include <abstractions/attached/base>
+
+    @{bin}/dbus-update-activation-environment mr,
+
+    owner @{HOME}/.xsession-errors w,
+
+    include if exists <local/startlxqt_dbus>
+  }
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
