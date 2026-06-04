@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2023 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,34 +8,33 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/startlxqtwayland
-profile startlxqtwayland @{exec_path} {
-  include <abstractions/base>
-  include <abstractions/consoles>
-  include <abstractions/freedesktop.org>
-  include <abstractions/fontconfig-cache-read> 
+@{att} = /att/startlxqtwayland/
+profile startlxqtwayland /{,usr/}bin/startlxqtwayland {
+  include <abstractions/attached/base>
+  include <abstractions/attached/consoles>
   include <abstractions/lxqt>
-  include <abstractions/wayland>
-  include <abstractions/X-strict>
+  include <abstractions/attached/nameservice-strict>
 
   signal (receive) set=(term) peer=sddm,
 
-  @{exec_path} 			mr,
+  @{exec_path} mr,
 
-  @{bin}/cat 			rix,
-  @{bin}/cut 			rix,
-  @{bin}/cp  			rix,
-  @{bin}/dirname 		rix,
-  @{bin}/labwc  		rPx,
-  @{bin}/kwin_wayland  	rPx,
-  @{bin}/{,e}grep 		rix,
-  @{bin}/{m,g,}awk 		rix,
+  @{bin}/cat rix,
+  @{bin}/cut rix,
+  @{bin}/cp  rix,
+  @{bin}/dirname rix,
+  @{bin}/labwc  rPx,
+  @{bin}/wayfire  rPx,
+  @{bin}/kwin_wayland  rPx,
+  @{bin}/{,e}grep rix,
+  @{bin}/{m,g,}awk rix,
   @{bin}/mkdir		    rix,
   @{sh_path}		    rix,
-  @{bin}/lxqt-session 	rPx,
+  @{bin}/lxqt-session 	    rPx,
   @{bin}/kwin_wayland_wrapper rPx,
   @{bin}/systemd-detect-virt rPx,
-  @{bin}/systemctl      rCx -> systemctl,
-  @{bin}/tr		    	rix, 
+  @{bin}/systemctl                           rCx -> systemctl,
+  @{bin}/tr		    rix, 
   @{bin}/sed		    rix, 
   @{bin}/dbus-update-activation-environment  rCx -> dbus,
 
@@ -62,7 +61,8 @@ profile startlxqtwayland @{exec_path} {
   owner @{user_config_dirs}/lxqt/ rw,
   owner @{user_config_dirs}/menus/{,**} r,
   owner @{user_config_dirs}/lxqt/wayland/ rw,
-  owner @{user_config_dirs}/kxkbrc r,
+  owner @{user_config_dirs}/lxqt/wayland/lxqt-wayfire.ini rw,
+  owner @{user_config_dirs}/kxkbrc rw,         # NNNN
 
   owner @{user_share_dirs}/kservices5/{,**} r,
   owner @{user_share_dirs}/sddm/wayland-session.log rw,
@@ -74,20 +74,21 @@ profile startlxqtwayland @{exec_path} {
   owner @{run}/user/@{uid}/ r,
 
         @{PROC}/sys/kernel/core_pattern r,
-  owner @{PROC}/@{pid}/maps r,
 
   /dev/tty rw,
-  /dev/tty@{int} rw,
+  /dev/tty@{u8} rw,
 
-  profile systemctl flags=(attach_disconnected) {
-    include <abstractions/base>
+  profile systemctl flags=(attach_disconnected, attach_disconnected.path=@{att}) {
+    include <abstractions/attached/base>
     include <abstractions/app/systemctl>
+
+    owner @{user_share_dirs}/sddm/wayland-session.log w,
   
     include if exists <local/startlxqt_systemctl>
   }
 
   profile dbus {
-    include <abstractions/base>
+    include <abstractions/attached/base>
 
     @{bin}/dbus-update-activation-environment mr,
 
@@ -101,12 +102,14 @@ profile startlxqtwayland @{exec_path} {
 
     owner @{PROC}/@{pid}/fd/ r,
 
-    /dev/tty@{int} rw,
+    /dev/tty@{u8} rw,
 
     include if exists <local/startlxqt_dbus>
   }
-  
+
   include if exists <local/startlxqtwayland>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
