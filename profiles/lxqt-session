@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,119 +8,116 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-session
-profile lxqt-session @{exec_path}  {
-  include <abstractions/base>
+@{att} = /att/lxqt-session/
+profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach_disconnected.path=@{att}) {
+  include <abstractions/attached/base>
   include <abstractions/app-launcher-user>
-  include <abstractions/desktop>
   include <abstractions/dconf>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
-
-  signal (send),
-  signal (receive) set=(kill, term) peer=startlxqt,		
-  signal (receive) set=(kill, term) peer=startlxqtwayland,
-  signal (receive) set=(kill, term) peer=sddm,		
-
-  ptrace read,
-
-  #aa:dbus own bus=session name=org.lxqt.Session
-  #aa:exec geoclue
+  include <abstractions/qt5-shader-cache>
+  include <abstractions/attached/nameservice-strict>
 
   network netlink raw,
 
-  @{exec_path}  			mr,	
+  signal (send),
+  signal (receive) set=(kill, term) peer=kwin_wayland,
+  signal (receive) set=(kill, term) peer=startlxqt,
+  signal (receive) set=(kill, term) peer=sddm,
 
-  @{sh_path}                   		rix,
-  @{bin}/sed                   		rix,
-  @{bin}/readlink 	       		rix,
-  @{bin}/dirname			rix,
-  @{bin}/dbus-update-activation-environment  rCx -> dbus,
-  @{bin}/systemctl                      rCx -> systemctl,
+  @{exec_path} mr,
 
-  @{bin}/bwrap                  rPx -> glycin,
- 
-  /usr/share/					r,
-  /usr/share/cursors/				r,
-  /usr/share/backintime/common/*		r,
-  /usr/share/fontconfig/{,**} r,
-  /usr/share/desktop-directories/*		r,
-  /usr/share/system-config-printer/*		r,
-  /usr/share/gvfs/remote-volume-monitors/	r,
+  @{sh_path}                          Cx -> shell,
+  @{bin}/sed                          rix,
+  @{bin}/readlink                     rix,
+  @{bin}/dirname                      rix,
+  @{bin}/system-config-printer-applet rPx,
+  @{bin}/dbus-update-activation-environment rCx -> dbus,
+  @{bin}/systemctl                    rCx -> systemctl,
 
-  /etc/fstab 					r,
-  /etc/xdg/                                     r,
-  /etc/xdg/autostart/                           r,
-  /etc/xdg/autostart/*.desktop                  r,
-  /etc/xdg/menus/lxqt-*                         r,
-  /etc/xdg/openbox/*                            r,
-  /etc/udev/udev.conf                           r,
+  @{bin}/pavucontrol                  rPx,
+  @{lib}/geoclue-2.0/demos/agent      rPx,
+  @{bin}/nm-connection-editor         rPx,
+  @{bin}/nm-applet                    rPx,
+  @{bin}/dconf-editor                 rPx,
+  @{bin}/setxkbmap                    rPx,
+  @{bin}/start-pulseaudio-x11         rPx,
+  @{bin}/xrdb                         rPx,
+  @{bin}/xdg-user-dirs-update         rPx,
 
-  /var/tmp/ r,
+  /usr/share/                         r,
+  /usr/share/cursors/                 r,
+  /usr/share/backintime/common/*      r,
+  /usr/share/desktop-directories/*    r,
+  /usr/share/system-config-printer/*  r,
 
-  owner @{HOME}/.local/share/			r,
-  owner @{HOME}/.config/			r,
-  owner @{HOME}/.config/autostart/		r,
-  owner @{HOME}/.config/autostart/*		rw,
+  /etc/xdg/                           r,
+  /etc/xdg/autostart/                 r,
+  /etc/xdg/autostart/*.desktop        r,
+  /etc/xdg/menus/lxqt-*               r,
+  /etc/xdg/openbox/*                  r,
+  /etc/udev/udev.conf                 r,
 
-  owner @{user_cache_dirs}/openbox/openbox.log  	rwk,
-  owner @{user_config_dirs}/lxqt/#@{int} rw,
-  owner @{user_config_dirs}/lxqt/power.conf rw,
-  owner @{user_config_dirs}/lxqt/session.conf.lock rwk,
-  owner @{user_config_dirs}/lxqt/session.conf.@{rand6} rwl -> @{user_config_dirs}/lxqt/#@{int},
-  owner @{user_config_dirs}/mimeapps.list{,.@{rand6}} 	rw,
-  owner @{user_config_dirs}/dconf/user			r,
-  owner @{user_config_dirs}/openbox/rc.xml      	r,
-  owner @{user_share_dirs}/sddm/xorg-session.log 	rw,
-  owner @{user_cache_dirs}/openbox/sessions/            rw,
+  owner @{user_config_dirs}/autostart/ r,
+  owner @{user_config_dirs}/autostart/*.desktop r,
+  owner @{user_cache_dirs}/openbox/   rw,
+  owner @{user_cache_dirs}/openbox/sessions/          rw,
+  owner @{user_cache_dirs}/openbox/openbox.log        rwk,
+  owner @{user_config_dirs}/mimeapps.list{,.@{rand6}} rw,
+  owner @{user_config_dirs}/openbox/rc.xml            r,
+  owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/*.conf rw,
 
   @{att}@{run}/systemd/inhibit/@{int}.ref rw,
+  owner @{att}/dev/tty@{u16} rw,
 
-  @{PROC}/ 					r, 
-  @{PROC}/uptime 				r,
-  @{PROC}/@{pid}/stat 				r,
-  owner @{PROC}/@{pid}/stat 			r,
-  owner @{PROC}/@{pid}/mountinfo		r, 
-  owner @{PROC}/@{pid}/mounts 			r,
+  @{PROC}/                             r,
+  @{PROC}/uptime                       r,
+  @{PROC}/@{pid}/stat                  r,
+  owner @{PROC}/@{pid}/ 	       r,
+  owner @{PROC}/@{pid}/stat            r,
 
-  @{run}/mount/utab r,
-  @{run}/systemd/inhibit/** 			rw,
-  owner @{run}/user/@{uid}/dconf/ 		rw,
-  owner @{run}/user/@{uid}/dconf/user 		rw,
-  owner @{run}/user/@{uid}/bus			rw,
- 
-  /tmp/ r,
-  /dev/tty                                              r,
-  owner /dev/tty@{u8}	                                        rw,
+  /dev/tty                             rw,
+  /dev/tty@{u16}                       rw,
+  owner /dev/tty@{u16} rw,
 
-  include if exists <local/lxqt-session>
+  deny ptrace,
 
-#  profile systemctl {
-  profile systemctl flags=(attach_disconnected, complain) {
-    include <abstractions/base>
+  profile shell {
+    include <abstractions/base-strict>
+
+    owner @{user_share_dirs}/sddm/xorg-session.log w,
+    owner @{user_share_dirs}/sddm/wayland-session.log w,
+
+    /dev/tty                                            rw,
+    /dev/tty@{u16}                                      rw,
+    /dev/pts/@{u16}                                     rw,
+
+    @{sh_path}                                          mr,
+
+  }
+
+  profile systemctl {
+    include <abstractions/attached/base>
     include <abstractions/app/systemctl>
-  
+
     include if exists <local/lxqt-session_systemctl>
   }
 
-#  profile dbus {
-  profile dbus flags=(attach_disconnected, complain) {
-    include <abstractions/base>
- #   include <abstractions/bus-session>
+  profile dbus flags=(attach_disconnected) {
+    include <abstractions/attached/base>
+    include <abstractions/bus-session>
 
     @{bin}/dbus-update-activation-environment mr,
 
-    owner @{user_share_dirs}/sddm/xorg-session.log rw,
-
-    owner @{PROC}/@{pid}/fd/ r,
-
-    owner /dev/tty@{u8} rw,
-    deny /var/lib/dbus/machine-id r,
-    deny /etc/machine-id r,
-
-    /dev/tty@{u8} rw,
+    owner /dev/tty@{u16} rw,
+    /dev/tty@{u16} rw,
 
     include if exists <local/lxqt-session_dbus>
   }
+
+  include if exists <local/lxqt-session>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
