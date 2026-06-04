@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,8 +8,10 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-notificationd
-#profile lxqt-notificationd @{exec_pathlx112} flags=(attach_disconnected, complain) {
-  include <abstractions/base>
+##@{att} = ""
+@{att} = /
+profile lxqt-notificationd /{,usr/}bin/lxqt-notificationd flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
+  include <abstractions/base-strict>
   include <abstractions/bus-accessibility>
   include <abstractions/consoles>
   include <abstractions/graphics>
@@ -17,17 +19,64 @@ include <tunables/global>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/nameservice-strict>
   
-  ptrace (read) peer=lxqt-panel,
+  include <abstractions/bus/session/own>
 
-  #aa:dbus own bus=session name=org.kde.StatusNotifierWatcher
-  #aa:dbus own bus=session name=org.freedesktop.Notifications
+  network inet stream,
+
+  dbus bind bus=session name=org.kde.StatusNotifierWatcher{,.*},
+  dbus receive bus=session path=/org/kde/StatusNotifierWatcher{,/**}
+       interface=org.kde.StatusNotifierWatcher{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/kde/StatusNotifierWatcher{,/**}
+       interface=org.kde.StatusNotifierWatcher{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/kde/StatusNotifierWatcher{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/kde/StatusNotifierWatcher{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="@{busname}"),
+  dbus receive bus=session path=/org/kde/StatusNotifierWatcher{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.kde.StatusNotifierWatcher{,.*}}"),
+  dbus send bus=session path=/org/kde/StatusNotifierWatcher{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  
+  include <abstractions/bus/session/own>
+
+  dbus bind bus=session name=org.freedesktop.Notifications{,.*},
+  dbus receive bus=session path=/org/freedesktop/Notifications{,/**}
+       interface=org.freedesktop.Notifications{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/freedesktop/Notifications{,/**}
+       interface=org.freedesktop.Notifications{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/freedesktop/Notifications{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/freedesktop/Notifications{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="@{busname}"),
+  dbus receive bus=session path=/org/freedesktop/Notifications{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.freedesktop.Notifications{,.*}}"),
+  dbus send bus=session path=/org/freedesktop/Notifications{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
 
   @{exec_path}					mr,
 
   @{bin}/lxqt-config-notificationd rPx,
 
-  /usr/share/hplip/{,**} r,
-  
   owner @{user_cache_dirs}/lxqt-notificationd/#@{int} 	rwk,
   owner @{user_cache_dirs}/lxqt-notificationd/unattended.list rwk,
   owner @{user_cache_dirs}/lxqt-notificationd/unattended.list l -> @{user_cache_dirs}/lxqt-notificationd/#*,
@@ -40,9 +89,12 @@ include <tunables/global>
   owner /tmp/@{int}  					r,
 
   /dev/tty						rw,
-  owner /dev/tty@{int} rw,		
+  /dev/tty@{u16}					rw,
+  owner /dev/tty@{u16} rw,		
 
   include if exists <local/lxqt-notificationd>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
