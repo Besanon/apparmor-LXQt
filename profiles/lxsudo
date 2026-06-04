@@ -8,9 +8,9 @@ abi <abi/4.0>,
 
 include <tunables/global>
 
-@{exec_pathLSUD} = @{bin}/lxsudo
+@{exec_path} = @{bin}/lxsudo
 @{att} = /att/lxsudo/
-profile lxsudo @{exec_pathLSUD} flags=(attach_disconnected) {
+profile lxsudo @{exec_path} flags=(attach_disconnected) {
   include <abstractions/base>
   include <abstractions/app-launcher-root>
   include <abstractions/app/sudo>
@@ -26,6 +26,8 @@ profile lxsudo @{exec_pathLSUD} flags=(attach_disconnected) {
   ptrace read,
 
   signal send set=(winch, hup, term),
+
+  @{exec_path} mr,
 
   @{bin}/@{shells}                  rUx,
   @{lib}/**                         PUx,
