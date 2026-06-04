@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,17 +8,18 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lxqt-sudo 
-profile lxqt-sudo @{exec_path} flags=(attach_disconnected, complain) {
-  include <abstractions/base>
-  include <abstractions/bus-accessibility>
-  include <abstractions/consoles>
+@{att} = /att/lxqt-sudo/
+profile lxqt-sudo /{,usr/}bin/lxqt-sudo flags=(attach_disconnected, attach_disconnected.path=@{att}) {
+  include <abstractions/attached/base>
+  include <abstractions/attached/consoles>
   include <abstractions/lxqt>
+  include <abstractions/bus-accessibility>
 
   signal (send) set=(int,kill) peer=lxqt-sudo//sudo,
 
   @{exec_path}				mr,
 
-  @{bin}/sudo         Cx -> sudo,
+  @{bin}/sudo rCx -> root,
 
   owner /tmp/@{int}  				r,
 
@@ -26,25 +27,18 @@ profile lxqt-sudo @{exec_path} flags=(attach_disconnected, complain) {
   /dev/pts/@{u8} 				rwk,
   /dev/ptmx rw,
 
-  profile sudo flags=(complain) {
-    include <abstractions/base>
+  profile root {
+    include <abstractions/base-strict>
     include <abstractions/app/sudo>
 
-    capability sys_ptrace,
+    @{bin}/lsblk rPx,
 
-    signal (receive) set=(int,kill) peer=lxqt-sudo,
-
-    ptrace read peer=unconfined,
-
-    @{bin}/su   rPx,
-    @{bin}/sudo rPx,
-
-    @{sh_path}  rix,
-
-    include if exists <local/lxqt-sudo_sudo>
+    include if exists <local/lxqt-sudo_root>
   }
 
   include if exists <local/lxqt-sudo>
 }
+
+# vim:syntax=apparmor
 
 # vim:syntax=apparmor
