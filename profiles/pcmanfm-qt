@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2020-2021 Mikhail Morfikov
-# Copyright (C) 2024 Besanon <m231009ts@mailfence.com>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -8,27 +8,85 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/pcmanfm-qt
-profile pcmanfm-qt @{exec_path} {
-  include <abstractions/base>
+@{att} = /att/pcmanfm-qt/
+profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
+  include <abstractions/attached/base>
+  include <abstractions/bus-session>
   include <abstractions/app-launcher-user>
   include <abstractions/deny-sensitive-home>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
   include <abstractions/trash-strict>
+  include <abstractions/disks-read>
+  include <abstractions/devices-usb-read>
 
   signal (send) set=(term, kill),
   signal (receive) set=(term, kill) peer=lxqt-session,
 
   network netlink raw,
 
-  #aa:exec kioworker
+  include <abstractions/bus/session/own>
+
+  dbus bind bus=session name=org.pcmanfm.PCManFM{,.*},
+  dbus receive bus=session path=/org/pcmanfm/PCManFM{,/**}
+       interface=org.pcmanfm.PCManFM{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/pcmanfm/PCManFM{,/**}
+       interface=org.pcmanfm.PCManFM{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/pcmanfm/PCManFM{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/pcmanfm/PCManFM{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/pcmanfm/PCManFM{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus send bus=session path=/org/pcmanfm/PCManFM{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  include <abstractions/bus/session/own>
+
+  dbus bind bus=session name=org.freedesktop.FileManager1{,.*},
+  dbus receive bus=session path=/org/freedesktop/FileManager1{,/**}
+       interface=org.freedesktop.FileManager1{,.*}
+       peer=(name="@{busname}"),
+  dbus send bus=session path=/org/freedesktop/FileManager1{,/**}
+       interface=org.freedesktop.FileManager1{,.*}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus (send receive) bus=session path=/org/freedesktop/FileManager1{,/**}
+       interface=org.freedesktop.DBus.Properties
+       member={Get,GetAll,Set,PropertiesChanged}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/freedesktop/FileManager1{,/**}
+       interface=org.freedesktop.DBus.Introspectable
+       member=Introspect
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus receive bus=session path=/org/freedesktop/FileManager1{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member=GetManagedObjects
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
+  dbus send bus=session path=/org/freedesktop/FileManager1{,/**}
+       interface=org.freedesktop.DBus.ObjectManager
+       member={InterfacesAdded,InterfacesRemoved}
+       peer=(name="{@{busname},org.freedesktop.DBus}"),
 
   @{exec_path} mr,
-
+  
   @{lib}/menu-cache/menu-cached rix,
   @{lib}/exec/menu-cache/menu-cache-gen rix,
   @{lib}/menu-cache/menu-cache-gen rix,
+
+  @{bin}/dbus-launch    rCx -> dbus,
+#  @{open_path}          rPx -> child-open-any,
+#  @{sh_path}        rix,
+  @{sh_path} Cx -> shell,
 
   #aa:lint ignore=too-wide
   # Full access to user's data
@@ -47,6 +105,9 @@ profile pcmanfm-qt @{exec_path} {
   owner @{tmp}/ r,
   owner @{tmp}/** rw,
 
+  /etc/xdg/menus/lxqt-applications-fm.menu r,
+  /etc/xdg/menus/lxqt-applications.menu r,
+
   /usr/share/libfm-qt6/{,**} r,
   /usr/share/gvfs/remote-volume-monitors/{,**} r,
   /usr/share/pcmanfm-qt/translations/pcmanfm-qt_de.qm r,
@@ -54,19 +115,25 @@ profile pcmanfm-qt @{exec_path} {
   /usr/share/templates/*.desktop r, 
   /usr/share/thumbnailers/{,**} r,
 
-  owner @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int} rwk,
-  owner @{user_config_dirs}/pcmanfm-qt/lxqt/desktop-items-0.conf.lock* rwk,
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int} rwkl,
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/desktop-items-0.conf.lock rwk,
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/desktop-items-0.conf.@{rand6} rwkl -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int},
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf rw,
-  owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf.lock rwk,
-  owner @{user_config_dirs}/pcmanfm-qt/lxqt/settings.conf.lock rwk,
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf.lock* rwk,
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/settings.conf.lock* rwk,
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/settings.conf.@{rand6} rwkl -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int},
-  owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf.@{rand6} rwkl -> @{user_config_dirs}/pcmanfm-1qt/lxqt/#@{int},
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf.@{rand6} rwkl -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int},
+
+  owner @{att}/dev/tty@{u16} rw,
 
         @{run}/issue r,
         @{run}/mount/utab r,
   owner @{run}/user/@{uid}/#@{int} rw,
 
+  @{run}/crond.pid r,
+  @{run}/media/ r,
+  @{run}/mount/utab r,
+  @{run}/utmp r,
   @{run}/udev/data/+*:* r,                # Identifies all subsystems
   @{run}/udev/data/c@{int}:@{int} r,      # Identifies all character devices
 
@@ -81,18 +148,49 @@ profile pcmanfm-qt @{exec_path} {
   owner @{PROC}/@{pid}/mounts r,
   owner @{PROC}/@{pid}/fd/ r,
   owner @{PROC}/@{pid}/cgroup r,
+        @{PROC}/@{pid}/task/@{tid}/children r,
 
   /dev/tty                                              r,
   owner /dev/tty@{u8} rw,
 
   # Silence non user's data
   deny @{efi}/{,**} r,
-  deny /opt/{,**} r,
   deny /root/{,**} r,
   deny /tmp/.* rw,
   deny /tmp/.*/{,**} rw,
 
+  profile shell flags=(attach_disconnected) {
+    include <abstractions/base-strict>
+
+    @{sh_path}                                          mr,
+
+    @{bin}/grep rix,
+#    @{bin}/id  rPx,
+    @{bin}/cp  rix,
+    @{bin}/sed rix,
+
+    owner @{user_share_dirs}/sddm/xorg-session.log w,
+    owner @{user_share_dirs}/sddm/wayland-session.log w,
+
+    /dev/tty                                            rw,
+    /dev/tty@{u16}                                      rw,
+    /dev/pts/@{u16}                                     rw,
+    owner /dev/tty@{u16} rw,
+  }
+
+  profile dbus {
+    include <abstractions/base-strict>
+    include <abstractions/nameservice-strict>
+
+    @{bin}/dbus-launch   mr,
+
+    include if exists <local/pcmanfm-qt_dbus>
+  }
+
   include if exists <local/pcmanfm-qt>
 }
+
+# vim:syntax=apparmor
+
 
 # vim:syntax=apparmor
