@@ -10,10 +10,10 @@ include <tunables/global>
 @{exec_path} = @{bin}/nm-connection-editor
 @{att} = /att/nm-connection-editor/
 profile nm-connection-editor /{,usr/}bin/nm-connection-editor flags=(attach_disconnected, attach_disconnected.path=@{att}) {
-  include <abstractions/dconf-write>
   include <abstractions/attached/base>
   include <abstractions/app/bwrap-glycin>
   include <abstractions/bus-system>
+  include <abstractions/dconf-write>
   include <abstractions/dbus-strict>
   include <abstractions/fonts>
   include <abstractions/graphics>
