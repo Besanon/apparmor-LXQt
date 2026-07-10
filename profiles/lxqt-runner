@@ -10,9 +10,9 @@ include <tunables/global>
 @{exec_path} = @{bin}/lxqt-runner
 @{att} = /
 profile lxqt-runner /{,usr/}bin/lxqt-runner flags=(attach_disconnected, attach_disconnected.path=@{att}) {
-  include <abstractions/base-strict>
+  include <abstractions/attached/base>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
+  include <abstractions/atached/nameservice-strict>
 
   @{exec_path} mr,
 
