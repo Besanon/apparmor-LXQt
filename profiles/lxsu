@@ -11,7 +11,7 @@ include <tunables/global>
 @{exec_path} = @{bin}/lxsu
 @{att} = /att/lxsu/
 profile lxsu @{exec_path} flags=(attach_disconnected) {
-  include <abstractions/base>
+  include <abstractions/attached/base>
   include <abstractions/app-launcher-root>
   include <abstractions/app/sudo>
 
