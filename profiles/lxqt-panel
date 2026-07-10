@@ -10,12 +10,12 @@ include <tunables/global>
 @{exec_path} = @{bin}/lxqt-panel
 @{att} = /
 profile lxqt-panel /{,usr/}bin/lxqt-panel flags=(attach_disconnected, attach_disconnected.path=@{att}) {
-  include <abstractions/base-strict>
+  include <abstractions/attached/base>
   include <abstractions/app-launcher-user>
   include <abstractions/audio-client>
   include <abstractions/dconf-write>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
 
   network inet dgram,
   network inet6 dgram,
@@ -27,8 +27,8 @@ profile lxqt-panel /{,usr/}bin/lxqt-panel flags=(attach_disconnected, attach_dis
   @{exec_path} mr,
   @{sh_path} Cx -> shell,
 
-  @{bin}/exo-open rPx, # old: rix
-  @{lib}/gio-launch-desktop  rPx,  # old: rix,
+  @{bin}/exo-open rPx,
+  @{lib}/gio-launch-desktop  rPx,
   @{bin}/nm-applet rPx,
   @{bin}/nm-connection-editor rPx,
   @{bin}/ControlPanel rPx,
