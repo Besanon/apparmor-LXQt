@@ -10,13 +10,13 @@ include <tunables/global>
 @{exec_path} = @{bin}/lxqt-notificationd
 @{att} = /
 profile lxqt-notificationd /{,usr/}bin/lxqt-notificationd flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
-  include <abstractions/base-strict>
+  include <abstractions/attached/base>
   include <abstractions/bus-accessibility>
-  include <abstractions/consoles>
+  include <abstractions/attached/consoles>
   include <abstractions/graphics>
   include <abstractions/lxqt>
   include <abstractions/fontconfig-cache-read>
-  include <abstractions/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
   
   include <abstractions/bus/session/own>
 
