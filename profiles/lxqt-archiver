@@ -10,10 +10,10 @@ include <tunables/global>
 @{exec_path} = @{bin}/lxqt-archiver
 @{att} = /
 profile lxqt-archiver /{,usr/}bin/lxqt-archiver flags=(attach_disconnected, attach_disconnected.path=@{att}) {
-  include <abstractions/base-strict>
+  include <abstractions/attached/base>
   include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
-  include <abstractions/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
   include <abstractions/thumbnails-cache-read>
   include <abstractions/thumbnails-cache-write>
   include <abstractions/user-read-strict>
