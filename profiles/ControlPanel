@@ -13,9 +13,7 @@ profile ControlPanel /{,usr/}bin/ControlPanel {
   include <abstractions/base-strict>
   include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
-  include <abstractions/qt5-shader-cache>
-  include <abstractions/bus-session>
-  include <abstractions/bus-accessibility>
+  include <abstractions/qt-shader-cache>
     
   @{exec_path}				mr,
 
@@ -23,9 +21,12 @@ profile ControlPanel /{,usr/}bin/ControlPanel {
 
   /usr/share/desktop-directories/lxqt-* 	r,
 
+  owner @{HOME}/.foxrc/ rw,
+  owner @{HOME}/.foxrc/Desktop 			rw,
+
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.lock rwk,
   
-  owner /tmp/@{int}  				r,
+  owner @{tmp}/@{int}  				r,
 
   /dev/pts/@{u8}				rw,
   /dev/tty					rw,
