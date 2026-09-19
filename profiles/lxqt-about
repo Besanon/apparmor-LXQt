@@ -15,8 +15,6 @@ profile lxqt-about /{,usr/}bin/lxqt-about {
 
   @{exec_path} mr,
 
-  /usr/share/desktop-directories/{,**} r,
-
   /etc/xdg/menus/lxqt-applications.menu r,
 
   owner /tmp/@{int} r,
@@ -25,7 +23,5 @@ profile lxqt-about /{,usr/}bin/lxqt-about {
 
   include if exists <local/lxqt-about>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
