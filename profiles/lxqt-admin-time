@@ -12,7 +12,6 @@ include <tunables/global>
 profile lxqt-admin-time /{,usr/}bin/lxqt-admin-time {
   include <abstractions/base-strict>
   include <abstractions/lxqt>
-  include <abstractions/bus-accessibility>
   include <abstractions/nameservice-strict>
 
   ptrace read peer=lxqt-admin-time,  
@@ -24,8 +23,7 @@ profile lxqt-admin-time /{,usr/}bin/lxqt-admin-time {
 
   /etc/timezone r,
 
-  owner @{user_config_dirs}/lxqt/#@{int} rwk,
-  owner @{user_config_dirs}/lxqt/TimeDate.conf rwkl -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/TimeDate.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
   owner @{user_config_dirs}/lxqt/TimeDate.conf.lock rwk,
   owner /tmp/@{int}  		       r,
 
@@ -41,11 +39,7 @@ profile lxqt-admin-time /{,usr/}bin/lxqt-admin-time {
 
     include if exists <local/lxqt-admin-time_pkexec>
   }
-
-
   include if exists <local/lxqt-admin-time>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
