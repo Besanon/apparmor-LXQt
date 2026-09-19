@@ -11,7 +11,6 @@ include <tunables/global>
 @{att} = /att/lxqt-powermanagement/
 profile lxqt-powermanagement /{,usr/}bin/lxqt-powermanagement flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
   include <abstractions/attached/base>
-  include <abstractions/bus-session>
   include <abstractions/lxqt>
   include <abstractions/attached/nameservice-strict>
 
@@ -70,22 +69,30 @@ profile lxqt-powermanagement /{,usr/}bin/lxqt-powermanagement flags=(attach_disc
 
   @{exec_path}					mr,
 
-  @{lib}/qt6/plugins/platformthemes/*.so mr,
+#  @{lib}/qt6/plugins/platformthemes/*.so mrix,
 
   @{bin}/xset						rPx,
   @{bin}/pkexec 					rPx,
   @{bin}/{,ba,da}sh 					rix,
   @{bin}/lxqt-leave 					rPx,
   @{bin}/dbus-launch rPx,  
+
   /etc/udev/udev.conf 					r,
   /etc/fstab 						r,
   /etc/xdg/lxqt/lxqt-powermanagement.conf  rw,
 
   / r,
 
-  owner @{user_config_dirs}/lxqt/#@{int} rwk,
-  owner @{user_config_dirs}/lxqt/power.conf rw,
+  owner @{user_config_dirs}/lxqt/lxqt.conf rwlk -> @{user_config_dirs}/lxqt/#@{int}, 
+  owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/lxqt.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
   owner @{user_config_dirs}/lxqt/lxqt-powermanagement.conf rw,
+  owner @{user_config_dirs}/lxqt/lxqt-powermanagement.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/lxqt-powermanagement.conf.lock rwk, 
+  owner @{user_config_dirs}/lxqt/lxqt-powermanagement.conf.@{rand6} rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/power.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/power.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/session.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
 
   @{run}/systemd/inhibit/* 				rw,
 
@@ -108,6 +115,7 @@ profile lxqt-powermanagement /{,usr/}bin/lxqt-powermanagement flags=(attach_disc
   @{sys}/devices/@{pci}/**/**/input@{int}/uevent r, 
   @{sys}/devices/@{pci}/**/**/input/event@{int}/uevent r, 
   @{sys}/devices/@{pci}/**/**/input/input@{int}/event@{int}/uevent r, 
+  @{sys}/devices/@{pci_bus}/acpi.video_bus.@{int}/input/input@{int}/event@{int}/uevent r,
   @{sys}/devices/LNXSYSTM:00/LNXPWRBN:00/input/input@{int}/uevent r,
   @{sys}/devices/LNXSYSTM:00/LNXPWRBN:00/input/input@{int}/event@{int}/uevent r,
   @{sys}/devices/LNXSYSTM:00/LNXSYBUS:00/**/input/input@{int}/uevent r,
@@ -134,7 +142,7 @@ profile lxqt-powermanagement /{,usr/}bin/lxqt-powermanagement flags=(attach_disc
 
   @{att}@{run}/systemd/inhibit/@{int}.ref rw,
 
-  owner /tmp/@{u8}  					r,
+  owner @{tmp}/@{u8}  					r,
 
   /dev/tty						rw,  
   owner /dev/tty@{u8}  rw,
@@ -142,7 +150,5 @@ profile lxqt-powermanagement /{,usr/}bin/lxqt-powermanagement flags=(attach_disc
 
   include if exists <local/lxqt-powermanagement>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
