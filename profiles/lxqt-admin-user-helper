@@ -11,7 +11,6 @@ include <tunables/global>
 @{att} = ""
 profile lxqt-admin-user-helper /{,usr/}bin/lxqt-admin-user-helper {
   include <abstractions/base-strict>
-  include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
     
   @{exec_path}		mr,
@@ -30,7 +29,5 @@ profile lxqt-admin-user-helper /{,usr/}bin/lxqt-admin-user-helper {
 
   include if exists <local/lxqt-admin-user-helper>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
