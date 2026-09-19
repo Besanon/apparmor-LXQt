@@ -23,7 +23,7 @@ profile lxqt-config-brightness /{,usr/}bin/lxqt-config-brightness {
 
   owner @{HOME}/ r,
 
-  owner /tmp/@{int} r,
+  owner @{tmp}/@{int} r,
 
   @{sys}/class/backlight/ r,
   @{sys}/devices/@{pci}/*_backlight/{,max_,actual_}brightness rw,
@@ -42,8 +42,8 @@ profile lxqt-config-brightness /{,usr/}bin/lxqt-config-brightness {
 
     signal (receive)  set=term peer=lxqt-config-brightness,
 
-    @{bin}/@{bin}/lxqt-config-brightness px,
-    @{bin}/lxqt-backlight_backend px,
+    @{bin}/@{bin}/lxqt-config-brightness Px,
+    @{bin}/lxqt-backlight_backend Px,
 
     @{etc_ro}/inputrc r,
     @{etc_ro}/inputrc.keys r,
@@ -73,12 +73,9 @@ profile lxqt-config-brightness /{,usr/}bin/lxqt-config-brightness {
     /dev/tty                                            rw,
     /dev/tty@{u16}                                      rw,
     /dev/pts/@{u16}                                     rw,
-
   }
 
   include if exists <local/lxqt-config-brightness>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
