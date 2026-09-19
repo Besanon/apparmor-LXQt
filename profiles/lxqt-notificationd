@@ -11,9 +11,7 @@ include <tunables/global>
 @{att} = /
 profile lxqt-notificationd /{,usr/}bin/lxqt-notificationd flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
   include <abstractions/attached/base>
-  include <abstractions/bus-accessibility>
   include <abstractions/attached/consoles>
-  include <abstractions/graphics>
   include <abstractions/lxqt>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/attached/nameservice-strict>
@@ -76,16 +74,18 @@ profile lxqt-notificationd /{,usr/}bin/lxqt-notificationd flags=(attach_disconne
 
   @{bin}/lxqt-config-notificationd rPx,
 
+  owner @{user_cache_dirs}/lxqt-notificationd/ rw,
   owner @{user_cache_dirs}/lxqt-notificationd/#@{int} 	rwk,
   owner @{user_cache_dirs}/lxqt-notificationd/unattended.list rwk,
   owner @{user_cache_dirs}/lxqt-notificationd/unattended.list l -> @{user_cache_dirs}/lxqt-notificationd/#*,
   owner @{user_cache_dirs}/lxqt-notificationd/unattended.list.@{rand6} rwkl -> @{user_cache_dirs}/lxqt-notificationd/#@{int},
   owner @{user_cache_dirs}/lxqt-notificationd/unattended.list.lock rwk,
 
-  owner @{user_config_dirs}/lxqt/notifications.conf rw,
+  owner @{user_config_dirs}/lxqt/notifications.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/notifications.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/globalkeyshortcuts.conf.@{rand6} rwkl -> @{user_config_dirs}/lxqt/#@{int},
 
-  owner /tmp/@{int}  					r,
+  owner @{tmp}/@{int}  					r,
 
   /dev/tty						rw,
   /dev/tty@{u16}					rw,
@@ -93,7 +93,5 @@ profile lxqt-notificationd /{,usr/}bin/lxqt-notificationd flags=(attach_disconne
 
   include if exists <local/lxqt-notificationd>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
