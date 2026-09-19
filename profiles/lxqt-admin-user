@@ -12,7 +12,6 @@ include <tunables/global>
 profile lxqt-admin-user /{,usr/}bin/lxqt-admin-user {
   include <abstractions/base-strict>
   include <abstractions/lxqt>
-  include <abstractions/bus-accessibility>
   include <abstractions/nameservice-strict>
 
   @{exec_path}			mr,
@@ -21,7 +20,7 @@ profile lxqt-admin-user /{,usr/}bin/lxqt-admin-user {
 
   /etc/shells 				r,
 
-  owner /tmp/@{int}             	r,
+  owner @{tmp}/@{int}             	r,
 
   /dev/tty				rw,
 
@@ -37,11 +36,7 @@ profile lxqt-admin-user /{,usr/}bin/lxqt-admin-user {
 
     include if exists <local/lxqt-admin-user_pkexec>
   }
-
-
   include if exists <local/lxqt-admin-user>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
