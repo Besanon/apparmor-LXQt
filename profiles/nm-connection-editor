@@ -13,17 +13,18 @@ profile nm-connection-editor /{,usr/}bin/nm-connection-editor flags=(attach_disc
   include <abstractions/attached/base>
   include <abstractions/app/bwrap-glycin>
   include <abstractions/bus-system>
-  include <abstractions/dconf-write>
   include <abstractions/dbus-strict>
-  include <abstractions/fonts>
+  include <abstractions/dconf-write>
+  include <abstractions/fonts-strict>
   include <abstractions/graphics>
   include <abstractions/freedesktop.org>
   include <abstractions/bus/system/org.freedesktop.NetworkManager>
   include <abstractions/fontconfig-cache-read>
-  include <abstractions/qt6>
+  include <abstractions/qt>
   include <abstractions/attached/nameservice-strict>
   include <abstractions/openssl>
   include <abstractions/ssl_certs>
+  include <abstractions/wayland-strict>
   include <abstractions/X-strict>
 
   signal (receive) set=(kill,term) peer=lxqt-session,
@@ -56,13 +57,14 @@ profile nm-connection-editor /{,usr/}bin/nm-connection-editor flags=(attach_disc
   /usr/share/gtk-3.0/settings.ini r,
   /usr/share/themes/{,**} r,
 
+  /etc/NetworkManager/{,**} r,
+  /etc/NetworkManager/system-connections/{,**} rw,
+
   /etc/udev/udev.conf r,
   /etc/pulse/client.conf r,
   /etc/pkcs11/pkcs11.conf r,
   /etc/machine-id r,
   /etc/fstab r,
-
-  /var/lib/dbus/machine-id r,
 
   / r,
 
@@ -95,6 +97,7 @@ profile nm-connection-editor /{,usr/}bin/nm-connection-editor flags=(attach_disc
   @{sys}/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max r,
   @{sys}/fs/cgroup/user.slice/cpu.max r,
   @{sys}/fs/cgroup/@{int}/cpu.max r,
+
   owner @{PROC}/@{pid}/fd/ r,
   owner @{PROC}/@{pid}/mountinfo r,
   owner @{PROC}/@{pid}/cgroup r,
@@ -106,7 +109,5 @@ profile nm-connection-editor /{,usr/}bin/nm-connection-editor flags=(attach_disc
 
   include if exists <local/nm-connection-editor>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
