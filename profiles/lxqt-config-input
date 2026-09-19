@@ -14,12 +14,10 @@ profile lxqt-config-input /{,usr/}bin/lxqt-config-input {
   include <abstractions/base-strict>
   include <abstractions/bus/system/org.bluez>
   include <abstractions/bus/system/org.freedesktop.login1>
-  include <abstractions/bus-accessibility>
   include <abstractions/devices-usb>
-  include <abstractions/graphics>
   include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
-  include <abstractions/qt5-shader-cache>
+  include <abstractions/qt-shader-cache>
   
   signal (read) set=(kill,term) peer=lxqt-session,
 
@@ -32,22 +30,20 @@ profile lxqt-config-input /{,usr/}bin/lxqt-config-input {
 
   owner @{HOME}/.gtkrc-2.0 rw,
 
-  owner @{user_config_dirs}/lxqt/lxqt.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
-  owner @{user_config_dirs}/lxqt/lxqt.conf.@{rand6} rw,
-  owner @{user_config_dirs}/lxqt/session.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
-  owner @{user_config_dirs}/lxqt/session.conf.@{rand6} rw,
-  owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk,
-  owner @{user_config_dirs}/lxqt/lxqt-config-appearance.conf rw,
-  owner @{user_config_dirs}/lxqt/lxqt-config-input.conf.lock rwk,
-  owner @{user_config_dirs}/lxqt/lxqt-config-input.conf.@{rand6}  rwkl -> @{user_config_dirs}/lxqt/#@{int},
-  owner @{user_config_dirs}/lxqt/#@{int}  rwk,
-  owner @{user_config_dirs}/lxqt/session.conf.lock rwk,
-  owner @{user_config_dirs}/lxqt/lxqt-config-input.conf rwl -> @{user_config_dirs}/lxqt/#@{int}, 
   owner @{user_config_dirs}/gtk-3.0/settings.ini rw,
+  owner @{user_config_dirs}/lxqt/lxqt.conf.@{rand6} rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/lxqt-config-appearance.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/lxqt-config-appearance.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/lxqt-config-input.conf rwl -> @{user_config_dirs}/lxqt/#@{int}, 
+  owner @{user_config_dirs}/lxqt/lxqt-config-input.conf.@{rand6}  rwkl -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/lxqt-config-input.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/session.conf.@{rand6} rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/session.conf.lock rwk,
 
-  owner /tmp/#@{int}  		        rw,
-  owner /tmp/lxqt-config-input.@{rand6} rwk,
-  owner /tmp/lxqt-config-input.@{rand6} rwkl -> /tmp/#@{int},
+  owner @{tmp}/#@{int}  		        rw,
+  owner @{tmp}/lxqt-config-input.@{rand6} rwk,
+  owner @{tmp}/lxqt-config-input.@{rand6} rwkl -> /tmp/#@{int},
 
   @{run}/udev/data/c@{int}:*   		r,
   @{run}/udev/data/b@{int}:*   		r,
@@ -103,9 +99,9 @@ profile lxqt-config-input /{,usr/}bin/lxqt-config-input {
   
   /dev/tty				rw,
 
+  deny @{sys}/class/usbmisc/ r,
+
   include if exists <local/lxqt-config-input>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
