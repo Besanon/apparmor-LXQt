@@ -11,7 +11,6 @@ include <tunables/global>
 @{att} = ""
 profile lxqt-backlight_backend /{,usr/}bin/lxqt-backlight_backend {
   include <abstractions/base-strict>
-  include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
   
   @{exec_path}		mr,
@@ -28,15 +27,14 @@ profile lxqt-backlight_backend /{,usr/}bin/lxqt-backlight_backend {
   @{sys}/devices/@{pci}/drm/card1/card1-LVDS-1/intel_backlight/* r,
   @{sys}/devices/@{pci}/drm/card1/card1-LVDS-1/intel_backlight/brightnes rw,
 
+  @{user_share_dirs}/sddm/wayland-session.log w,
   @{user_share_dirs}/sddm/xorg-session.log w,
 
-  owner /tmp/@{int}  		r,
+  owner @{tmp}/@{int}  		r,
 
   /dev/tty 			rw,
 
   include if exists <local/lxqt-backlight_backend>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
