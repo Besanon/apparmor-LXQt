@@ -16,10 +16,7 @@ profile lxqt-config-locale /{,usr/}bin/lxqt-config-locale {
 
   @{exec_path} mr,
 
-  /etc/machine-id r,
-
   owner @{user_config_dirs}/lxqt/* r,
-  owner @{user_config_dirs}/lxqt/#@{int} rw,
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.@{rand6} rw,
   owner @{user_config_dirs}/lxqt/lxqt-config.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
@@ -31,14 +28,11 @@ profile lxqt-config-locale /{,usr/}bin/lxqt-config-locale {
   owner @{user_config_dirs}/lxqt/session.conf.@{rand6} rw,
   owner @{user_config_dirs}/lxqt/session.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
 
-  owner /tmp/@{int} r,
+  owner @{tmp}/@{int} r,
 
   /dev/tty rw,
 
   include if exists <local/lxqt-config-locale>
 }
-
-# vim:syntax=apparmor
-
 
 # vim:syntax=apparmor
