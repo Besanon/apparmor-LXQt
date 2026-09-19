@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2026 Besanon <set508@proton.me> 
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -15,13 +15,11 @@ profile lxqt-config-printer /{,usr/}bin/lxqt-config-printer {
 
   @{exec_path} mr,
 
-  owner /tmp/@{int} r,
+  owner @{tmp}/@{int} r,
 
   /dev/tty rw,
 
   include if exists <local/lxqt-config-printer>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
