@@ -11,8 +11,9 @@ include <tunables/global>
 @{att} = /att/pcmanfm-qt/
 profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_disconnected.path=@{att}, mediate_deleted) {
   include <abstractions/attached/base>
-  include <abstractions/bus-session>
   include <abstractions/app-launcher-user>
+  include <abstractions/audio-client>
+  include <abstractions/bus/system/org.freedesktop.UDisks2>
   include <abstractions/deny-sensitive-home>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/lxqt>
@@ -79,14 +80,14 @@ profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_dis
 
   @{exec_path} mr,
   
-  @{lib}/menu-cache/menu-cached rix,
   @{lib}/exec/menu-cache/menu-cache-gen rix,
   @{lib}/menu-cache/menu-cache-gen rix,
+  @{lib}/menu-cache/menu-cached rix,
 
   @{bin}/dbus-launch    rCx -> dbus,
-#  @{open_path}          rPx -> child-open-any,
-#  @{sh_path}        rix,
   @{sh_path} Cx -> shell,
+
+  @{lib}/libfm-qt*  mr,
 
   #aa:lint ignore=too-wide
   # Full access to user's data
@@ -94,6 +95,7 @@ profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_dis
   /*/ r,
   @{bin}/ r,
   @{lib}/ r,
+  /opt/ r,
   @{MOUNTDIRS}/ r,
   @{MOUNTS}/ r,
   @{MOUNTS}/** rw,
@@ -103,7 +105,8 @@ profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_dis
   owner @{run}/user/@{uid}/ r,
   owner @{run}/user/@{uid}/** rw,
   owner @{tmp}/ r,
-  owner @{tmp}/** rw,
+  owner /opt/packages/ r,
+  owner /opt/packages/** rw,
 
   /etc/xdg/menus/lxqt-applications-fm.menu r,
   /etc/xdg/menus/lxqt-applications.menu r,
@@ -114,15 +117,20 @@ profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_dis
   /usr/share/templates/ r,
   /usr/share/templates/*.desktop r, 
   /usr/share/thumbnailers/{,**} r,
+  /usr/share/desktop-directories/*.directory r,
 
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int} rwkl,
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/desktop-items-0.conf.lock rwk,
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/desktop-items-0.conf.@{rand6} rwkl -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int},
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/dir-settings.conf rwk,
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf rw,
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/settings.conf rwlk -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int8},
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf.lock* rwk,
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/settings.conf.lock* rwk,
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/settings.conf.@{rand6} rwkl -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int},
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf rwlk -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int},
   owner @{user_config_dirs}/pcmanfm-qt/lxqt/recent-files.conf.@{rand6} rwkl -> @{user_config_dirs}/pcmanfm-qt/lxqt/#@{int},
+  owner @{user_config_dirs}/pcmanfm-qt/lxqt/dir-settings.conf~ rwkl -> @{user_config_dirs}/pcmanfm-qt/lxqt/dir-settings.conf, 
 
   owner @{att}/dev/tty@{u16} rw,
 
@@ -160,12 +168,11 @@ profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_dis
   deny /tmp/.*/{,**} rw,
 
   profile shell flags=(attach_disconnected) {
-    include <abstractions/base-strict>
+    include <abstractions/attached/base>
 
     @{sh_path}                                          mr,
 
     @{bin}/grep rix,
-#    @{bin}/id  rPx,
     @{bin}/cp  rix,
     @{bin}/sed rix,
 
@@ -189,8 +196,5 @@ profile pcmanfm-qt /{,usr/}bin/pcmanfm-qt flags=(attach_disconnected, attach_dis
 
   include if exists <local/pcmanfm-qt>
 }
-
-# vim:syntax=apparmor
-
 
 # vim:syntax=apparmor
