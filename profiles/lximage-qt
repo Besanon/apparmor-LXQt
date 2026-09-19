@@ -8,10 +8,9 @@ abi <abi/4.0>,
 include <tunables/global>
 
 @{exec_path} = @{bin}/lximage-qt
-@{att} = ""
+@{att} = /
 profile lximage-qt /{,usr/}bin/lximage-qt {
   include <abstractions/base-strict>
-  include <abstractions/bus-accessibility>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
@@ -21,7 +20,6 @@ profile lximage-qt /{,usr/}bin/lximage-qt {
   include <abstractions/trash-strict>
 
   include <abstractions/bus/session/own>
-
   dbus bind bus=session name=org.lxqt.LXImage{,.*},
   dbus receive bus=session path=/org/lxqt/LXImage{,/**}
        interface=org.lxqt.LXImage{,.*}
@@ -69,7 +67,6 @@ profile lximage-qt /{,usr/}bin/lximage-qt {
   owner @{HOME}/filename.config r,
 
   owner @{user_cache_dirs}/thumbnails/normal/** 	rwk,
-  owner @{user_config_dirs}/#@{int} 			rwk,
   owner @{user_config_dirs}/QtProject.conf 		rw,
   owner @{user_config_dirs}/QtProject.conf.lock 	rwk, 
   owner @{user_config_dirs}/QtProject.conf.@{rand6} rwkl -> @{user_config_dirs}/#@{int}, 
@@ -82,9 +79,9 @@ profile lximage-qt /{,usr/}bin/lximage-qt {
   owner @{user_config_dirs}/lximage-qt/settings.conf.lock.rmlock rw,
   owner @{user_config_dirs}/lximage-qt/settings.conf l -> @{user_config_dirs}/lximage-qt/#@{int},
   owner @{user_config_dirs}/lximage-qt/settings.conf.@{rand6} rw,
-  owner @{user_config_dirs}/lximage-qt/settings.conf.@{rand6} kl -> @{user_config_dirs}/lximage-qt/#@{int}, 
+  owner @{user_config_dirs}/lximage-qt/settings.conf.@{rand6} l -> @{user_config_dirs}/lximage-qt/#@{int}, 
   owner @{user_config_dirs}/lximage-qt/QtProject.conf.@{rand6}  rw,
-  owner @{user_config_dirs}/lximage-qt/QtProject.conf.@{rand6}  l -> @{user_config_dirs}/lximage-qt/#*,
+  owner @{user_config_dirs}/lximage-qt/QtProject.conf.@{rand6}  rwkl -> @{user_config_dirs}/lximage-qt/#@{int},
 
   owner @{user_share_dirs}/gvfs-metadata/home r,
   owner @{user_share_dirs}/gvfs-metadata/*.log r,
@@ -94,18 +91,18 @@ profile lximage-qt /{,usr/}bin/lximage-qt {
 
   @{run}/mount/utab r,
 
-  owner /tmp/@{int}  				r,
-  owner /tmp/@{word} rw,
+  owner @{tmp}/@{int}  				r,
+  owner @{tmp}/@{word} rw,
 
   /dev/tty					rw,
+  owner /dev/tty				rw,
   owner /dev/tty@{int} rw,
+  owner @{att}/dev/tty@{u8} rw,
 
   deny owner @{HOME}/.* r,
   deny owner @{HOME}/filename.config r,
 
   include if exists <local/lximage-qt>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
