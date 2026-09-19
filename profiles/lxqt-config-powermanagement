@@ -17,7 +17,6 @@ profile lxqt-config-powermanagement /{,usr/}bin/lxqt-config-powermanagement {
 
   @{exec_path} mr,
 
-  owner @{user_config_dirs}/lxqt/#@{int} rw,
   owner @{user_config_dirs}/lxqt/power.conf rw,
   owner @{user_config_dirs}/lxqt/power.conf.lock rwk,
   owner @{user_config_dirs}/lxqt/power.conf.@{rand6} rw,
@@ -29,13 +28,11 @@ profile lxqt-config-powermanagement /{,usr/}bin/lxqt-config-powermanagement {
 
   @{sys}/devices/@{pci}/drm/card1/card1-eDP-1/intel_backlight/bl_power rw,
 
-  owner /tmp/@{int} r,
+  owner @{tmp}/@{int} r,
 
   /dev/tty rw,
 
   include if exists <local/lxqt-config-powermanagement>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
