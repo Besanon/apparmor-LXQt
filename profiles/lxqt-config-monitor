@@ -11,10 +11,8 @@ include <tunables/global>
 @{att} = ""
 profile lxqt-config-monitor /{,usr/}bin/lxqt-config-monitor {
   include <abstractions/base-strict>
-  include <abstractions/lxqt>
-  include <abstractions/qt5-shader-cache>
-  include <abstractions/bus-accessibility>
   include <abstractions/graphics>
+  include <abstractions/lxqt>
   
   signal (read) set=(kill,term) peer=lxqt-session,
 
@@ -23,8 +21,7 @@ profile lxqt-config-monitor /{,usr/}bin/lxqt-config-monitor {
   /var/cache/fontconfig/{,**} rw,
   
   owner @{user_config_dirs}/autostart/lxqt-config-monitor-autostart.desktop     rw,
-  owner @{user_config_dirs}/lxqt/  r,
-  owner @{user_config_dirs}/lxqt/#@{int}                          rwk,
+  owner @{user_config_dirs}/lxqt/ rw,
   owner @{user_config_dirs}/lxqt/lxqt-config-monitor.conf rw,
   owner @{user_config_dirs}/lxqt/lxqt.conf.lock                   rwk,
   owner @{user_config_dirs}/lxqt/lxqt.conf.@{rand6}  rw,
@@ -34,15 +31,11 @@ profile lxqt-config-monitor /{,usr/}bin/lxqt-config-monitor {
   owner @{user_config_dirs}/lxqt/lxqt-config-monitor.conf.@{rand6} l -> @{user_config_dirs}/lxqt/#@{int},
   owner @{user_config_dirs}/lxqt/lxqt-config-monitor.conf l -> @{user_config_dirs}/lxqt/#@{int},
 
-  owner /tmp/@{int}  				r,
-
-   @{PROC}/sys/kernel/random/boot_id r,
+  owner @{tmp}/@{int}  				r,
 
   /dev/tty					rw,
 
   include if exists <local/lxqt-config-monitor>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
