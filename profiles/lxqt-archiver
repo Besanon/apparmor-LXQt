@@ -11,7 +11,6 @@ include <tunables/global>
 @{att} = /
 profile lxqt-archiver /{,usr/}bin/lxqt-archiver flags=(attach_disconnected, attach_disconnected.path=@{att}) {
   include <abstractions/attached/base>
-  include <abstractions/bus-accessibility>
   include <abstractions/lxqt>
   include <abstractions/attached/nameservice-strict>
   include <abstractions/thumbnails-cache-read>
@@ -37,10 +36,9 @@ profile lxqt-archiver /{,usr/}bin/lxqt-archiver flags=(attach_disconnected, atta
 
   owner @{HOME}/ 		 r,
 
-  owner @{user_config_dirs}/lxqt/#@{int} rwk,
   owner @{user_config_dirs}/lxqt/archiver.conf rw,
   owner @{user_config_dirs}/lxqt/archiver.conf.lock rwk,
-  owner @{user_config_dirs}/lxqt/archiver.conf l -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/archiver.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
 
   owner @{user_cache_dirs}/.??-@{rand6}/ rw,
   owner @{user_cache_dirs}/.??-@{rand6}/file-list rw,
@@ -48,9 +46,10 @@ profile lxqt-archiver /{,usr/}bin/lxqt-archiver flags=(attach_disconnected, atta
   owner @{PROC}/@{pid}/mountinfo r,
   owner @{PROC}/@{pid}/mounts 	 r,
 
-  owner /tmp/@{int}  		 r,
-  owner /tmp/lxqt-archiver-@{int}/ rw,
-
+  owner @{tmp}/@{int}  		 r,
+  owner @{tmp}/lxqt-archiver-@{int}/ rw,
+  owner @{tmp}/lxqt-archiver-@{int}0/ rw,
+ 
   /dev/tty			 rw,
   owner /dev/tty@{u16} rw,
 
@@ -60,7 +59,5 @@ profile lxqt-archiver /{,usr/}bin/lxqt-archiver flags=(attach_disconnected, atta
 
   include if exists <local/lxqt-archiver>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
