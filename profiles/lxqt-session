@@ -12,9 +12,12 @@ include <tunables/global>
 profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach_disconnected.path=@{att}) {
   include <abstractions/attached/base>
   include <abstractions/app-launcher-user>
+  include <abstractions/desktop>
   include <abstractions/dconf>
+  include <abstractions/fontconfig-cache-read>
+  include <abstractions/graphics>
   include <abstractions/lxqt>
-  include <abstractions/qt5-shader-cache>
+  include <abstractions/qt-shader-cache>
   include <abstractions/attached/nameservice-strict>
 
   network netlink raw,
@@ -22,11 +25,15 @@ profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach
   signal (send),
   signal (receive) set=(kill, term) peer=kwin_wayland,
   signal (receive) set=(kill, term) peer=startlxqt,
+  signal (receive) set=(kill, term) peer=startlxqtwayland,
   signal (receive) set=(kill, term) peer=sddm,
 
   @{exec_path} mr,
 
   @{sh_path}                          Cx -> shell,
+
+  /usr/lib/qt6/plugins/platformthemes/*.so  mr,
+
   @{bin}/sed                          rix,
   @{bin}/readlink                     rix,
   @{bin}/dirname                      rix,
@@ -44,7 +51,6 @@ profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach
   @{bin}/xrdb                         rPx,
   @{bin}/xdg-user-dirs-update         rPx,
 
-  /usr/share/                         r,
   /usr/share/cursors/                 r,
   /usr/share/backintime/common/*      r,
   /usr/share/desktop-directories/*    r,
@@ -57,18 +63,29 @@ profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach
   /etc/xdg/openbox/*                  r,
   /etc/udev/udev.conf                 r,
 
-  owner @{user_config_dirs}/autostart/ r,
-  owner @{user_config_dirs}/autostart/*.desktop r,
   owner @{user_cache_dirs}/openbox/   rw,
   owner @{user_cache_dirs}/openbox/sessions/          rw,
   owner @{user_cache_dirs}/openbox/openbox.log        rwk,
+
+  owner @{user_config_dirs}/autostart/ r,
+  owner @{user_config_dirs}/autostart/*.desktop r,
   owner @{user_config_dirs}/mimeapps.list{,.@{rand6}} rw,
   owner @{user_config_dirs}/openbox/rc.xml            r,
+  owner @{user_config_dirs}/lxqt/*.conf rwk,
+  owner @{user_config_dirs}/lxqt/lxqt.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
   owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk,
-  owner @{user_config_dirs}/lxqt/*.conf rw,
+  owner @{user_config_dirs}/lxqt/power.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/power.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/session.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/windowmanagers.conf.lock rwk,
 
   @{att}@{run}/systemd/inhibit/@{int}.ref rw,
   owner @{att}/dev/tty@{u16} rw,
+
+  @{sys}/devices/platform/**/input/input@{u16}/event@{u16}/uevent r,
+  @{sys}/devices/platform/**/serio@{u16}/input/input@{u16}/uevent r,
+  @{sys}/devices/platform/**/serio@{u16}/input/input@{u16}/mouse@{u16}/uevent r, 
+  @{sys}/devices/virtual/input/mice/uevent r,
 
   @{PROC}/                             r,
   @{PROC}/uptime                       r,
@@ -94,10 +111,11 @@ profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach
 
     @{sh_path}                                          mr,
 
+    include if exists <local/lxqt-session_shell>
   }
 
   profile systemctl {
-    include <abstractions/attached/base>
+    include <abstractions/base-strict>
     include <abstractions/app/systemctl>
 
     include if exists <local/lxqt-session_systemctl>
@@ -117,7 +135,5 @@ profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach
 
   include if exists <local/lxqt-session>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
