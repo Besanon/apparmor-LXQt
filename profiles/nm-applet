@@ -12,7 +12,7 @@ include <tunables/global>
 profile nm-applet /{,usr/}bin/nm-applet flags=(attach_disconnected, attach_disconnected.path=@{att}) {
   include <abstractions/attached/base>
   include <abstractions/attached/consoles>
-  include <abstractions/dconf>
+  include <abstractions/dconf-write>
   include <abstractions/bus-system>
   include <abstractions/app/bwrap-glycin>
   include <abstractions/fonts>
@@ -21,6 +21,7 @@ profile nm-applet /{,usr/}bin/nm-applet flags=(attach_disconnected, attach_disco
   include <abstractions/gtk-strict>
   include <abstractions/attached/nameservice-strict>
   include <abstractions/network-manager-observe>
+  include <abstractions/wayland-strict>
   include <abstractions/X-strict>
 
   signal (receive) peer=lxqt-session,
@@ -55,8 +56,12 @@ profile nm-applet /{,usr/}bin/nm-applet flags=(attach_disconnected, attach_disco
   /usr/share/p11-kit/modules/ r,
   /usr/share/p11-kit/modules/* r,
   /usr/share/themes/Default/gtk-3.0/gtk-keys.css r,
+  /usr/share/sounds/freedesktop/index.theme r,
 
+  /etc/NetworkManager/{,**} r,
+  /etc/NetworkManager/system-connections/{,**} rw,
   /etc/pulse/client.conf r,
+  /etc/fstab r,
   /etc/machine-id r,
   /etc/udev/udev.conf r,
 
@@ -78,6 +83,9 @@ profile nm-applet /{,usr/}bin/nm-applet flags=(attach_disconnected, attach_disco
   owner @{user_config_dirs}/user-dirs.dirs r,
   owner @{user_config_dirs}/pulse/cookie rwk,
 
+  owner @{user_cache_dirs}/event-sound-cache.tdb.@{hex32}.@{arch}-pc-linux-gnu rwk,
+  owner @{user_cache_dirs}/event-sound-cache.tdb.host.@{arch}-pc-linux-gnu rw,
+
   owner @{run}/user/@{uid}/pulse/ r,
 
   @{run}/udev/data/n3 r,
@@ -86,10 +94,12 @@ profile nm-applet /{,usr/}bin/nm-applet flags=(attach_disconnected, attach_disco
   @{run}/udev/data/+pci:0000:02:00.0 r,
 
   owner @{PROC}/@{pid}/cgroup r,
+  owner @{PROC}/@{pid}/mounts r,
 
   /dev/shm/ r,
   owner /dev/tty@{u8} rw,
 
+  deny /etc/machine-id r,
   deny owner @{HOME}/.Xdefaults r,
   deny owner @{HOME}/.icons r,
   deny @{sys}/fs/cgroup/user.slice/user-@{uid}.slice/session-@{int}.scope/cpu.max r,
@@ -100,7 +110,5 @@ profile nm-applet /{,usr/}bin/nm-applet flags=(attach_disconnected, attach_disco
 
   include if exists <local/nm-applet>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
