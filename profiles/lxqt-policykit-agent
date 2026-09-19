@@ -14,10 +14,8 @@ profile lxqt-policykit-agent /{,usr/}bin/lxqt-policykit-agent flags=(attach_disc
   include <abstractions/bus/system/org.freedesktop.PolicyKit1>
   include <abstractions/attached/consoles>
   include <abstractions/fontconfig-cache-read>
-  include <abstractions/graphics>
   include <abstractions/lxqt>
   include <abstractions/attached/nameservice-strict>
-  include <abstractions/qt5-compose-cache-write>
 
   network inet dgram,
   network inet stream,
@@ -80,18 +78,16 @@ profile lxqt-policykit-agent /{,usr/}bin/lxqt-policykit-agent flags=(attach_disc
 
   /usr/share/lxqt/translations/lxqt-policykit-agent/lxqt-policykit-agent_de.qm r,
 
-  /etc/machine-id 			r,
   /etc/xdg/plasmarc r,
-
-  /var/lib/dbus/machine-id 		r,
 
   owner @{user_cache_dirs}/icon-cache.kcache rw,
   owner @{user_cache_dirs}/qtshadercache-*/* r,
 
+  owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk,
   owner @{user_config_dirs}/qt5ct/{,**} r,
 
-  owner /tmp/#@{int} 			rw,
-  owner /tmp/lxqt-policykit-agent-[0-9].* rwl -> /tmp/#@{int},
+  owner @{tmp}/#@{int} 			rw,
+  owner @{tmp}/lxqt-policykit-agent-[0-9].* rwl -> @{tmp}/#@{int},
 
   @{run}/systemd/users/@{uid} 		r,
 
@@ -107,7 +103,5 @@ profile lxqt-policykit-agent /{,usr/}bin/lxqt-policykit-agent flags=(attach_disc
 
   include if exists <local/lxqt-policykit-agent>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
