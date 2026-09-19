@@ -10,14 +10,13 @@ include <tunables/global>
 @{exec_path}  = @{lib}/xdg-desktop-portal-lxqt
 @{exec_path} += @{lib}/@{multiarch}/{,libexec/}xdg-desktop-portal-lxqt
 @{att} = ""
-profile xdg-desktop-portal-lxqt /{{,usr/}lib{,exec,64}/xdg-desktop-portal-lxqt,{,usr/}lib{,exec,64}/*-linux-gnu*/{,libexec/}xdg-desktop-portal-lxqt,{,usr/}lib{,exec,64}/*-linux-gnu*/{,libexec/}xdg-desktop-portal-lxqt} {
+profile xdg-desktop-portal-lxqt /{{,usr/}lib{,64}/xdg-desktop-portal-lxqt,{,usr/}lib{,64}/*-linux-gnu*/{,libexec/}xdg-desktop-portal-lxqt,{,usr/}lib{,64}/*-linux-gnu*/{,libexec/}xdg-desktop-portal-lxqt} {
   include <abstractions/base-strict>
   include <abstractions/bus/session/org.gnome.Shell.Introspect>
   include <abstractions/bus/session/org.gtk.vfs.Daemon>
-  include <abstractions/graphics>
   include <abstractions/lxqt>
   include <abstractions/nameservice-strict>
-  include <abstractions/qt5-shader-cache>
+  include <abstractions/qt-shader-cache>
 
   network inet dgram,
   network inet6 dgram,
@@ -39,7 +38,5 @@ profile xdg-desktop-portal-lxqt /{{,usr/}lib{,exec,64}/xdg-desktop-portal-lxqt,{
 
   include if exists <local/xdg-desktop-portal-lxqt>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
