@@ -12,7 +12,7 @@ include <tunables/global>
 profile lxqt-runner /{,usr/}bin/lxqt-runner flags=(attach_disconnected, attach_disconnected.path=@{att}) {
   include <abstractions/attached/base>
   include <abstractions/lxqt>
-  include <abstractions/atached/nameservice-strict>
+  include <abstractions/attached/nameservice-strict>
 
   @{exec_path} mr,
 
@@ -21,20 +21,21 @@ profile lxqt-runner /{,usr/}bin/lxqt-runner flags=(attach_disconnected, attach_d
 
   /etc/xdg/menus/lxqt-applications.menu r,
 
-  owner @{user_config_dirs}/lxqt/lxqt-runner.conf rw,
+  owner @{user_config_dirs}/lxqt/lxqt.conf.lock rwk, 
+  owner @{user_config_dirs}/lxqt/lxqt-runner.conf rwlk -> @{user_config_dirs}/lxqt/#@{int} ,
   owner @{user_config_dirs}/lxqt/lxqt-runner.conf.lock rwk,
-  owner @{user_config_dirs}/lxqt/power.conf rw,
-  owner @{user_config_dirs}/lxqt/#@{int} rw,
-  owner @{user_config_dirs}/lxqt/lxqt-runner.conf.@{rand6} rwkl  -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/lxqt-runner.conf.@{rand6} rwlk  -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/power.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/power.conf.lock rwk,
+  owner @{user_config_dirs}/lxqt/session.conf rwlk -> @{user_config_dirs}/lxqt/#@{int},
+  owner @{user_config_dirs}/lxqt/session.conf.lock rwk,
 
-  owner /tmp/@{int} r,
+  owner @{tmp}/@{int} r,
 
   owner /dev/tty@{u16} rw,
   /dev/tty rw,
 
   include if exists <local/lxqt-runner>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
