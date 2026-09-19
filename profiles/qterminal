@@ -1,7 +1,7 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2024 Jeroen Rijken
 # Copyright (C) 2024 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2026 Besanon <set508@proton.me
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -53,14 +53,13 @@ profile qterminal /{,usr/}bin/qterminal flags=(attach_disconnected, attach_disco
   @{exec_path}                      mr,
   
   @{bin}/@{shells}                      rUx,
-#  @{bin}/@{shells}                      rPx -> shell_users,
   @{browsers_path}                      rPx,
   @{bin}/htop	                        rPx,
   @{bin}/dbus-launch 			rPx,
   @{bin}/vim 				rPx,
   @{open_path} 				rPx -> child-open-help,
 
-  /{,usr/}lib{,exec,64}/{,*-linux-gnu*/}utempter/utempter Px,
+  /{,usr/}lib{,64}/{,*-linux-gnu*/}utempter/utempter Px,
 
   /usr/share/color-schemes/{,**} r,
   /usr/share/kf6/{,**} r,
@@ -74,19 +73,20 @@ profile qterminal /{,usr/}bin/qterminal flags=(attach_disconnected, attach_disco
   /var/cache/fontconfig/ rw,
 
   owner @{HOME}/@{XDG_SSH_DIR}/config r,
-  @{HOME}/.Xdefaults r,
 
   owner @{user_cache_dirs}/icon-cache.kcache rw,
 
   owner @{user_config_dirs}/lxqt/lxqt.conf r,
+  owner @{user_config_dirs}/qterminal.org/ rw,
   owner @{user_config_dirs}/qterminal.org/#@{int} 		  rwk,
   owner @{user_config_dirs}/qterminal.org/qterminal_bookmarks.xml rw,
-  owner @{user_config_dirs}/qterminal.org/qterminal.ini 	  rw,
+#  owner @{user_config_dirs}/qterminal.org/qterminal.ini 	  rw,
+  owner @{user_config_dirs}/qterminal.org/qterminal.ini rwlk -> @{user_config_dirs}/qterminal.org/#@{int},
   owner @{user_config_dirs}/qterminal.org/qterminal.ini.lock 	  rwk,
-  owner @{user_config_dirs}/qterminal.org/qterminal.ini.@{rand6}  rwl -> @{user_config_dirs}/qterminal.org/#@{int},
+  owner @{user_config_dirs}/qterminal.org/qterminal.ini.@{rand6}  rwlk -> @{user_config_dirs}/qterminal.org/#@{int},
 
-  owner /tmp/#@{int} rw,
-  owner /tmp/konsole.@{rand6} rw,
+  owner @{tmp}/#@{int} rw,
+  owner @{tmp}/konsole.@{rand6} rw,
 
         @{PROC}/sys/kernel/core_pattern r,
   owner @{PROC}/@{pid}/cmdline r,
@@ -97,11 +97,9 @@ profile qterminal /{,usr/}bin/qterminal flags=(attach_disconnected, attach_disco
   /dev/pts/@{u8} rwk,
   owner /dev/tty@{int} rw,
 
-  owner /tmp/xauth_@{rand6} rw,
+  owner @{tmp}/xauth_@{rand6} rw,
 
   include if exists <local/qterminal>
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
