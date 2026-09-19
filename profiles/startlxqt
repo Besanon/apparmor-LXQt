@@ -1,6 +1,6 @@
 # apparmor.d - Full set of apparmor profiles
 # Copyright (C) 2023 Alexandre Pujol <alexandre@pujol.io>
-# Copyright (C) 2026 Besanon <set508@proton.me>  <set508@proton.me>
+# Copyright (C) 2026 Besanon <set508@proton.me>
 # SPDX-License-Identifier: GPL-2.0-only
 
 abi <abi/4.0>,
@@ -10,8 +10,8 @@ include <tunables/global>
 @{exec_path} = @{bin}/startlxqt
 @{att} = /att/startlxqt/
 profile startlxqt /{,usr/}bin/startlxqt {
-  include <abstractions/attached/base>
-  include <abstractions/attached/consoles>
+  include <abstractions/base-strict>
+  include <abstractions/consoles>
   include <abstractions/fontconfig-cache-read>
   include <abstractions/lxqt>
 
@@ -30,16 +30,16 @@ profile startlxqt /{,usr/}bin/startlxqt {
   @{bin}/dbus-update-activation-environment  rCx -> dbus,
 
   /usr/share/color-schemes/{,**} r,
-  /usr/share/desktop-directories/{,**} r,
+#  /usr/share/desktop-directories/{,**} r,
   /usr/share/kservices5/{,**} r,
 
-  /etc/machine-id r,
+#  /etc/machine-id r,
   /etc/xdg/menus/{,**} r,
 
   @{HOME}/ r,
 
-  owner @{user_cache_dirs}/#@{int} rw,
-        @{user_cache_dirs}/ksycoca5_* rwkl -> @{user_cache_dirs}/#@{int},
+#  owner @{user_cache_dirs}/#@{int} rw,
+        @{user_cache_dirs}/ksycoca6_* rwlk -> @{user_cache_dirs}/#@{int},
 
   owner @{user_config_dirs}/#@{int} rw,
   owner @{user_config_dirs}/lxqt/ rw,
@@ -49,8 +49,8 @@ profile startlxqt /{,usr/}bin/startlxqt {
   owner @{user_share_dirs}/sddm/wayland-session.log rw,
   owner @{user_share_dirs}/sddm/xorg-session.log rw,
 
-  owner /tmp/#@{int} rw,
-  owner /tmp/startlxqt.@{rand6} rwl -> /tmp/#@{int},
+  owner @{tmp}/#@{int} rw,
+  owner @{tmp}/startlxqt.@{rand6} rwl -> @{tmp}/#@{int},
 
   owner @{run}/user/@{uid}/ r,
 
@@ -69,7 +69,7 @@ profile startlxqt /{,usr/}bin/startlxqt {
   }
 
   profile dbus {
-    include <abstractions/attached/base>
+    include <abstractions/base-strict>
 
     @{bin}/dbus-update-activation-environment mr,
 
@@ -78,7 +78,5 @@ profile startlxqt /{,usr/}bin/startlxqt {
     include if exists <local/startlxqt_dbus>
   }
 }
-
-# vim:syntax=apparmor
 
 # vim:syntax=apparmor
