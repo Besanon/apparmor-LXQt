@@ -126,6 +126,8 @@ profile lxqt-session /{,usr/}bin/lxqt-session flags=(attach_disconnected, attach
     include <abstractions/bus-session>
 
     @{bin}/dbus-update-activation-environment mr,
+    @{bin}/dbus-daemon rPx,
+    @{bin}/dbus-launch r,
 
     owner /dev/tty@{u16} rw,
     /dev/tty@{u16} rw,
