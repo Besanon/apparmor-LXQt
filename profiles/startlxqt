@@ -28,17 +28,16 @@ profile startlxqt /{,usr/}bin/startlxqt {
 
   @{bin}/systemctl  rCx -> systemctl,
   @{bin}/dbus-update-activation-environment  rCx -> dbus,
+  @{bin}/dbus-launch        rCx -> dbus,  
+  @{bin}/dbus-daemon rPx,
 
   /usr/share/color-schemes/{,**} r,
-#  /usr/share/desktop-directories/{,**} r,
   /usr/share/kservices5/{,**} r,
 
-#  /etc/machine-id r,
   /etc/xdg/menus/{,**} r,
 
   @{HOME}/ r,
 
-#  owner @{user_cache_dirs}/#@{int} rw,
         @{user_cache_dirs}/ksycoca6_* rwlk -> @{user_cache_dirs}/#@{int},
 
   owner @{user_config_dirs}/#@{int} rw,
@@ -72,8 +71,12 @@ profile startlxqt /{,usr/}bin/startlxqt {
     include <abstractions/base-strict>
 
     @{bin}/dbus-update-activation-environment mr,
+    @{bin}/dbus-launch r,
+    @{bin}/dbus-daemon Px,
 
     owner @{HOME}/.xsession-errors w,
+
+    owner @{user_share_dirs}/sddm/xorg-session.log rw,
 
     include if exists <local/startlxqt_dbus>
   }
