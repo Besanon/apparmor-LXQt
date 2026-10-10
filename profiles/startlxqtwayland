@@ -37,6 +37,8 @@ profile startlxqtwayland /{,usr/}bin/startlxqtwayland {
   @{bin}/tr		    rix, 
   @{bin}/sed		    rix, 
   @{bin}/dbus-update-activation-environment  rCx -> dbus,
+  @{bin}/dbus-launch        rCx -> dbus,  
+  @{bin}/dbus-daemon rPx,
 
   /usr/share/color-schemes/{,**} r,
   /usr/share/desktop-directories/{,**} r,
@@ -60,7 +62,7 @@ profile startlxqtwayland /{,usr/}bin/startlxqtwayland {
   owner @{user_config_dirs}/menus/{,**} r,
   owner @{user_config_dirs}/lxqt/wayland/ rw,
   owner @{user_config_dirs}/lxqt/wayland/lxqt-wayfire.ini rw,
-  owner @{user_config_dirs}/kxkbrc rw,         # NEW
+  owner @{user_config_dirs}/kxkbrc rw,        
 
   owner @{user_share_dirs}/kservices5/{,**} r,
   owner @{user_share_dirs}/sddm/wayland-session.log rw,
@@ -89,6 +91,8 @@ profile startlxqtwayland /{,usr/}bin/startlxqtwayland {
     include <abstractions/base-strict>
 
     @{bin}/dbus-update-activation-environment mr,
+    @{bin}/dbus-launch r,
+    @{bin}/dbus-daemon Px,
 
     signal (send) set=(kill, term)  peer=dbus-daemon,
 
