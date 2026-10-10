@@ -75,7 +75,8 @@ profile lxqt-powermanagement /{,usr/}bin/lxqt-powermanagement flags=(attach_disc
   @{bin}/pkexec 					rPx,
   @{bin}/{,ba,da}sh 					rix,
   @{bin}/lxqt-leave 					rPx,
-  @{bin}/dbus-launch rPx,  
+  @{bin}/lxqt-config-powermanagement rPx,
+  @{bin}/dbus-launch rPx,
 
   /etc/udev/udev.conf 					r,
   /etc/fstab 						r,
